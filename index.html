@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>German Vocabulary</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f3; color: #1a1a1a; min-height: 100vh; }
+.app { max-width: 720px; margin: 0 auto; padding: 2rem 1rem; }
+h1 { font-size: 20px; font-weight: 600; margin-bottom: 1.5rem; }
+.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.view-btn { font-size: 13px; padding: 6px 14px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; color: #555; }
+.view-btn:hover { background: #f0f0f0; }
+.folders { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 1rem; }
+.folder-card { background: white; border: 1.5px solid #e0e0e0; border-radius: 12px; padding: 1rem; cursor: pointer; position: relative; user-select: none; transition: border-color 0.15s; }
+.folder-card:hover { border-color: #aaa; }
+.folder-card.selected { border: 2px solid #1D9E75; background: #f0faf6; }
+.folder-check { position: absolute; top: 10px; right: 10px; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #ccc; background: white; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; }
+.folder-card.selected .folder-check { background: #1D9E75; border-color: #1D9E75; color: white; }
+.folder-icon { font-size: 22px; margin-bottom: 8px; }
+.folder-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; padding-right: 22px; }
+.folder-meta { font-size: 11px; color: #888; }
+.progress-bar { height: 3px; background: #eee; border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.progress-fill { height: 100%; background: #1D9E75; border-radius: 2px; }
+.start-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 1.5rem; padding: 12px 16px; background: white; border-radius: 10px; border: 1px solid #e0e0e0; }
+.start-bar-left { font-size: 13px; color: #555; }
+.start-bar-left strong { color: #1a1a1a; }
+.start-bar-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.mode-toggle { display: flex; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+.mode-btn { font-size: 12px; padding: 6px 12px; background: transparent; border: none; cursor: pointer; color: #888; }
+.mode-btn.active { background: #f5f5f3; color: #1a1a1a; font-weight: 600; }
+.start-btn { font-size: 13px; font-weight: 600; padding: 7px 20px; background: #1D9E75; color: white; border: none; border-radius: 8px; cursor: pointer; }
+.start-btn:hover { background: #0F6E56; }
+.drill-area { background: white; border: 1px solid #e0e0e0; border-radius: 14px; padding: 2rem 1.5rem; }
+.drill-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.deck-label { font-size: 12px; color: #888; max-width: 60%; }
+.drill-counters { display: flex; gap: 14px; font-size: 13px; color: #888; }
+.drill-counters span { font-weight: 600; color: #1a1a1a; }
+.word-display { text-align: center; margin-bottom: 2rem; }
+.english-word { font-size: 30px; font-weight: 600; margin-bottom: 6px; }
+.word-hint { font-size: 13px; color: #888; }
+.streak-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; background: #e6f7f2; color: #0F6E56; font-weight: 600; }
+.mastered-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; background: #eeecfd; color: #3C3489; font-weight: 600; }
+.german-input { width: 100%; height: 44px; padding: 0 14px; font-size: 16px; border: 1.5px solid #ddd; border-radius: 10px; background: white; color: #1a1a1a; outline: none; margin-bottom: 10px; }
+.german-input:focus { border-color: #1D9E75; box-shadow: 0 0 0 3px rgba(29,158,117,0.12); }
+.german-input.correct { border-color: #1D9E75; background: #f0faf6; }
+.german-input.wrong { border-color: #E24B4A; background: #fff5f5; }
+.action-row { display: flex; gap: 8px; margin-bottom: 1rem; }
+.check-btn { flex: 1; height: 40px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 10px; background: white; cursor: pointer; font-weight: 500; }
+.check-btn:hover { background: #f5f5f3; }
+.dontknow-btn { height: 40px; padding: 0 16px; font-size: 13px; border: 1.5px solid #ddd; border-radius: 10px; background: transparent; color: #888; cursor: pointer; white-space: nowrap; }
+.dontknow-btn:hover { background: #f5f5f3; color: #1a1a1a; }
+.feedback { min-height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 1rem; }
+.feedback-left { display: flex; flex-direction: column; gap: 4px; }
+.feedback-text { font-size: 14px; }
+.feedback-text.correct { color: #0F6E56; }
+.feedback-text.wrong { color: #993C1D; }
+.plural-text { font-size: 12px; color: #888; }
+.feedback-right { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+.next-btn { font-size: 13px; padding: 7px 16px; border: 1.5px solid #ddd; border-radius: 8px; background: white; cursor: pointer; }
+.next-btn:hover { background: #f5f5f3; }
+.audio-btn { font-size: 18px; padding: 6px 10px; border: 1.5px solid #ddd; border-radius: 8px; background: white; cursor: pointer; color: #555; }
+.audio-btn:hover { background: #f5f5f3; }
+.stats-row { display: flex; gap: 8px; padding-top: 1rem; border-top: 1px solid #eee; }
+.mini-stat { flex: 1; background: #f5f5f3; border-radius: 8px; padding: 8px 10px; }
+.mini-label { font-size: 11px; color: #888; margin-bottom: 2px; }
+.mini-val { font-size: 17px; font-weight: 600; }
+.stats-view { background: white; border: 1px solid #e0e0e0; border-radius: 14px; padding: 1.5rem; }
+.stats-title { font-size: 15px; font-weight: 600; margin-bottom: 1rem; }
+.stats-section { margin-bottom: 1.5rem; }
+.stats-section-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #555; }
+table { width: 100%; font-size: 13px; border-collapse: collapse; }
+th { text-align: left; font-weight: 600; color: #888; padding: 6px 8px; border-bottom: 1px solid #eee; }
+td { padding: 6px 8px; border-bottom: 1px solid #f0f0f0; }
+tr:last-child td { border-bottom: none; }
+.empty-state { text-align: center; padding: 3rem; color: #888; font-size: 14px; }
+@media (max-width: 480px) {
+  .app { padding: 1rem 0.75rem; }
+  .english-word { font-size: 24px; }
+  .start-bar { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>🇩🇪 German Vocabulary</h1>
+    <button class="view-btn" id="stats-btn" onclick="toggleStats()">Stats</button>
+  </div>
+  <div class="folders" id="folders-grid"></div>
+  <div id="start-bar" style="display:none"></div>
+  <div id="drill-area" style="display:none"></div>
+  <div id="stats-view" style="display:none"></div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// VOCABULARY DATA
+// To add a new folder, copy one of the blocks below and add it to the DECKS array.
+// Fields: id (unique), name, icon (emoji), words (array of {en, de, pl (optional), hint})
+// ─────────────────────────────────────────────
+const DECKS = [
+  {
+    id: "a1_essentials", name: "A1 Essentials", icon: "⭐",
+    words: [
+      {en:"hello",de:"hallo",hint:"greeting"},
+      {en:"goodbye",de:"auf Wiedersehen",hint:"farewell formal"},
+      {en:"bye",de:"tschüss",hint:"farewell informal"},
+      {en:"please",de:"bitte",hint:"polite word"},
+      {en:"thank you",de:"danke",hint:"gratitude"},
+      {en:"thank you very much",de:"vielen Dank",hint:"gratitude strong"},
+      {en:"you're welcome",de:"bitte sehr",hint:"response to thanks"},
+      {en:"yes",de:"ja",hint:"affirmation"},
+      {en:"no",de:"nein",hint:"negation"},
+      {en:"excuse me",de:"Entschuldigung",hint:"apology / attention"},
+      {en:"sorry",de:"Es tut mir leid",hint:"apology"},
+      {en:"I do not understand",de:"Ich verstehe nicht",hint:"phrase"},
+      {en:"do you speak English?",de:"Sprechen Sie Englisch?",hint:"phrase formal"},
+      {en:"can you repeat that?",de:"Können Sie das wiederholen?",hint:"phrase"},
+      {en:"more slowly please",de:"Langsamer bitte",hint:"phrase"},
+      {en:"how much?",de:"Wie viel?",hint:"price question"},
+      {en:"where is...?",de:"Wo ist...?",hint:"location question"},
+      {en:"my name is",de:"Ich heiße",hint:"introduction"},
+      {en:"what is your name?",de:"Wie heißen Sie?",hint:"question formal"},
+      {en:"I am from",de:"Ich komme aus",hint:"origin"},
+      {en:"how are you?",de:"Wie geht es Ihnen?",hint:"greeting formal"},
+      {en:"I am fine",de:"Mir geht es gut",hint:"response"},
+      {en:"help!",de:"Hilfe!",hint:"emergency"},
+      {en:"good morning",de:"guten Morgen",hint:"greeting"},
+      {en:"good day",de:"guten Tag",hint:"greeting"},
+      {en:"good evening",de:"guten Abend",hint:"greeting"},
+      {en:"good night",de:"gute Nacht",hint:"greeting"},
+      {en:"today",de:"heute",hint:"time"},
+      {en:"tomorrow",de:"morgen",hint:"time"},
+      {en:"yesterday",de:"gestern",hint:"time"},
+      {en:"I would like",de:"Ich möchte",hint:"request phrase"},
+      {en:"the bill please",de:"die Rechnung bitte",hint:"restaurant phrase"},
+      {en:"where is the toilet?",de:"Wo ist die Toilette?",hint:"phrase"},
+      {en:"I am hungry",de:"Ich habe Hunger",hint:"phrase"},
+      {en:"I am thirsty",de:"Ich habe Durst",hint:"phrase"},
+      {en:"a ticket please",de:"eine Fahrkarte bitte",hint:"transport phrase"},
+    ]
+  },
+  {
+    id: "nouns_home", name: "Home & Daily Life", icon: "🏠",
+    words: [
+      {en:"the house",de:"das Haus",pl:"die Häuser",hint:"noun + article"},
+      {en:"the apartment",de:"die Wohnung",pl:"die Wohnungen",hint:"noun + article"},
+      {en:"the room",de:"das Zimmer",pl:"die Zimmer",hint:"noun + article"},
+      {en:"the kitchen",de:"die Küche",pl:"die Küchen",hint:"noun + article"},
+      {en:"the bedroom",de:"das Schlafzimmer",pl:"die Schlafzimmer",hint:"noun + article"},
+      {en:"the bathroom",de:"das Badezimmer",pl:"die Badezimmer",hint:"noun + article"},
+      {en:"the living room",de:"das Wohnzimmer",pl:"die Wohnzimmer",hint:"noun + article"},
+      {en:"the toilet",de:"die Toilette",pl:"die Toiletten",hint:"noun + article"},
+      {en:"the garden",de:"der Garten",pl:"die Gärten",hint:"noun + article"},
+      {en:"the door",de:"die Tür",pl:"die Türen",hint:"noun + article"},
+      {en:"the window",de:"das Fenster",pl:"die Fenster",hint:"noun + article"},
+      {en:"the table",de:"der Tisch",pl:"die Tische",hint:"noun + article"},
+      {en:"the chair",de:"der Stuhl",pl:"die Stühle",hint:"noun + article"},
+      {en:"the bed",de:"das Bett",pl:"die Betten",hint:"noun + article"},
+      {en:"the sofa",de:"das Sofa",pl:"die Sofas",hint:"noun + article"},
+      {en:"the lamp",de:"die Lampe",pl:"die Lampen",hint:"noun + article"},
+      {en:"the floor",de:"der Boden",pl:"die Böden",hint:"noun + article"},
+      {en:"the wall",de:"die Wand",pl:"die Wände",hint:"noun + article"},
+      {en:"the ceiling",de:"die Decke",pl:"die Decken",hint:"noun + article"},
+      {en:"the key",de:"der Schlüssel",pl:"die Schlüssel",hint:"noun + article"},
+      {en:"the phone",de:"das Handy",pl:"die Handys",hint:"noun + article"},
+      {en:"the computer",de:"der Computer",pl:"die Computer",hint:"noun + article"},
+      {en:"the television",de:"der Fernseher",pl:"die Fernseher",hint:"noun + article"},
+      {en:"the book",de:"das Buch",pl:"die Bücher",hint:"noun + article"},
+      {en:"the bag",de:"die Tasche",pl:"die Taschen",hint:"noun + article"},
+      {en:"the shirt",de:"das Hemd",pl:"die Hemden",hint:"noun + article"},
+      {en:"the trousers",de:"die Hose",pl:"die Hosen",hint:"noun + article"},
+      {en:"the shoes",de:"der Schuh",pl:"die Schuhe",hint:"noun + article"},
+      {en:"the jacket",de:"die Jacke",pl:"die Jacken",hint:"noun + article"},
+      {en:"the clothes",de:"die Kleidung",hint:"noun + article — no plural"},
+    ]
+  },
+  {
+    id: "food", name: "Food & Kitchen", icon: "🍽️",
+    words: [
+      {en:"the water",de:"das Wasser",hint:"noun + article"},
+      {en:"the coffee",de:"der Kaffee",hint:"noun + article"},
+      {en:"the tea",de:"der Tee",hint:"noun + article"},
+      {en:"the juice",de:"der Saft",pl:"die Säfte",hint:"noun + article"},
+      {en:"the beer",de:"das Bier",pl:"die Biere",hint:"noun + article"},
+      {en:"the wine",de:"der Wein",pl:"die Weine",hint:"noun + article"},
+      {en:"the bread",de:"das Brot",pl:"die Brote",hint:"noun + article"},
+      {en:"the butter",de:"die Butter",hint:"noun + article — no plural"},
+      {en:"the milk",de:"die Milch",hint:"noun + article — no plural"},
+      {en:"the egg",de:"das Ei",pl:"die Eier",hint:"noun + article"},
+      {en:"the cheese",de:"der Käse",hint:"noun + article"},
+      {en:"the meat",de:"das Fleisch",hint:"noun + article — no plural"},
+      {en:"the chicken",de:"das Hähnchen",pl:"die Hähnchen",hint:"noun + article (food)"},
+      {en:"the fish",de:"der Fisch",pl:"die Fische",hint:"noun + article"},
+      {en:"the soup",de:"die Suppe",pl:"die Suppen",hint:"noun + article"},
+      {en:"the salad",de:"der Salat",pl:"die Salate",hint:"noun + article"},
+      {en:"the rice",de:"der Reis",hint:"noun + article — no plural"},
+      {en:"the pasta",de:"die Nudeln",hint:"noun + article (plural only)"},
+      {en:"the potato",de:"die Kartoffel",pl:"die Kartoffeln",hint:"noun + article"},
+      {en:"the tomato",de:"die Tomate",pl:"die Tomaten",hint:"noun + article"},
+      {en:"the onion",de:"die Zwiebel",pl:"die Zwiebeln",hint:"noun + article"},
+      {en:"the garlic",de:"der Knoblauch",hint:"noun + article — no plural"},
+      {en:"the apple",de:"der Apfel",pl:"die Äpfel",hint:"noun + article"},
+      {en:"the banana",de:"die Banane",pl:"die Bananen",hint:"noun + article"},
+      {en:"the strawberry",de:"die Erdbeere",pl:"die Erdbeeren",hint:"noun + article"},
+      {en:"the orange",de:"die Orange",pl:"die Orangen",hint:"noun + article"},
+      {en:"the sugar",de:"der Zucker",hint:"noun + article — no plural"},
+      {en:"the salt",de:"das Salz",hint:"noun + article — no plural"},
+      {en:"the oil",de:"das Öl",pl:"die Öle",hint:"noun + article"},
+      {en:"the fork",de:"die Gabel",pl:"die Gabeln",hint:"noun + article"},
+      {en:"the knife",de:"das Messer",pl:"die Messer",hint:"noun + article"},
+      {en:"the spoon",de:"der Löffel",pl:"die Löffel",hint:"noun + article"},
+      {en:"the plate",de:"der Teller",pl:"die Teller",hint:"noun + article"},
+      {en:"the glass",de:"das Glas",pl:"die Gläser",hint:"noun + article"},
+      {en:"the cup",de:"die Tasse",pl:"die Tassen",hint:"noun + article"},
+    ]
+  },
+  {
+    id: "animals", name: "Animals", icon: "🐾",
+    words: [
+      {en:"the dog",de:"der Hund",pl:"die Hunde",hint:"noun + article"},
+      {en:"the cat",de:"die Katze",pl:"die Katzen",hint:"noun + article"},
+      {en:"the bird",de:"der Vogel",pl:"die Vögel",hint:"noun + article"},
+      {en:"the fish",de:"der Fisch",pl:"die Fische",hint:"noun + article"},
+      {en:"the horse",de:"das Pferd",pl:"die Pferde",hint:"noun + article"},
+      {en:"the cow",de:"die Kuh",pl:"die Kühe",hint:"noun + article"},
+      {en:"the pig",de:"das Schwein",pl:"die Schweine",hint:"noun + article"},
+      {en:"the sheep",de:"das Schaf",pl:"die Schafe",hint:"noun + article"},
+      {en:"the goat",de:"die Ziege",pl:"die Ziegen",hint:"noun + article"},
+      {en:"the rabbit",de:"das Kaninchen",pl:"die Kaninchen",hint:"noun + article"},
+      {en:"the mouse",de:"die Maus",pl:"die Mäuse",hint:"noun + article"},
+      {en:"the rat",de:"die Ratte",pl:"die Ratten",hint:"noun + article"},
+      {en:"the bear",de:"der Bär",pl:"die Bären",hint:"noun + article"},
+      {en:"the lion",de:"der Löwe",pl:"die Löwen",hint:"noun + article"},
+      {en:"the tiger",de:"der Tiger",pl:"die Tiger",hint:"noun + article"},
+      {en:"the elephant",de:"der Elefant",pl:"die Elefanten",hint:"noun + article"},
+      {en:"the monkey",de:"der Affe",pl:"die Affen",hint:"noun + article"},
+      {en:"the giraffe",de:"die Giraffe",pl:"die Giraffen",hint:"noun + article"},
+      {en:"the zebra",de:"das Zebra",pl:"die Zebras",hint:"noun + article"},
+      {en:"the wolf",de:"der Wolf",pl:"die Wölfe",hint:"noun + article"},
+      {en:"the fox",de:"der Fuchs",pl:"die Füchse",hint:"noun + article"},
+      {en:"the deer",de:"das Reh",pl:"die Rehe",hint:"noun + article"},
+      {en:"the snake",de:"die Schlange",pl:"die Schlangen",hint:"noun + article"},
+      {en:"the frog",de:"der Frosch",pl:"die Frösche",hint:"noun + article"},
+      {en:"the spider",de:"die Spinne",pl:"die Spinnen",hint:"noun + article"},
+      {en:"the butterfly",de:"der Schmetterling",pl:"die Schmetterlinge",hint:"noun + article"},
+      {en:"the bee",de:"die Biene",pl:"die Bienen",hint:"noun + article"},
+      {en:"the duck",de:"die Ente",pl:"die Enten",hint:"noun + article"},
+      {en:"the eagle",de:"der Adler",pl:"die Adler",hint:"noun + article"},
+      {en:"the owl",de:"die Eule",pl:"die Eulen",hint:"noun + article"},
+      {en:"the penguin",de:"der Pinguin",pl:"die Pinguine",hint:"noun + article"},
+      {en:"the dolphin",de:"der Delfin",pl:"die Delfine",hint:"noun + article"},
+      {en:"the whale",de:"der Wal",pl:"die Wale",hint:"noun + article"},
+      {en:"the shark",de:"der Hai",pl:"die Haie",hint:"noun + article"},
+    ]
+  },
+  {
+    id: "verbs_100", name: "100 Core Verbs", icon: "⚡",
+    words: [
+      {en:"to be",de:"sein",hint:"infinitive — irregular"},
+      {en:"to have",de:"haben",hint:"infinitive — irregular"},
+      {en:"to become",de:"werden",hint:"infinitive — irregular"},
+      {en:"to do / make",de:"machen",hint:"infinitive — regular"},
+      {en:"to go",de:"gehen",hint:"infinitive — irregular"},
+      {en:"to come",de:"kommen",hint:"infinitive — irregular"},
+      {en:"to want",de:"wollen",hint:"infinitive — modal"},
+      {en:"to can / be able to",de:"können",hint:"infinitive — modal"},
+      {en:"to must / have to",de:"müssen",hint:"infinitive — modal"},
+      {en:"to may / be allowed to",de:"dürfen",hint:"infinitive — modal"},
+      {en:"to should",de:"sollen",hint:"infinitive — modal"},
+      {en:"to like to",de:"mögen",hint:"infinitive — modal"},
+      {en:"to say",de:"sagen",hint:"infinitive — regular"},
+      {en:"to see",de:"sehen",hint:"infinitive — irregular"},
+      {en:"to know (a fact)",de:"wissen",hint:"infinitive — irregular"},
+      {en:"to know (a person/place)",de:"kennen",hint:"infinitive — mixed"},
+      {en:"to think",de:"denken",hint:"infinitive — mixed"},
+      {en:"to speak",de:"sprechen",hint:"infinitive — irregular"},
+      {en:"to eat",de:"essen",hint:"infinitive — irregular"},
+      {en:"to drink",de:"trinken",hint:"infinitive — irregular"},
+      {en:"to sleep",de:"schlafen",hint:"infinitive — irregular"},
+      {en:"to work",de:"arbeiten",hint:"infinitive — regular"},
+      {en:"to live / reside",de:"wohnen",hint:"infinitive — regular"},
+      {en:"to live / be alive",de:"leben",hint:"infinitive — regular"},
+      {en:"to buy",de:"kaufen",hint:"infinitive — regular"},
+      {en:"to pay",de:"bezahlen",hint:"infinitive — regular"},
+      {en:"to read",de:"lesen",hint:"infinitive — irregular"},
+      {en:"to write",de:"schreiben",hint:"infinitive — irregular"},
+      {en:"to understand",de:"verstehen",hint:"infinitive — irregular"},
+      {en:"to learn",de:"lernen",hint:"infinitive — regular"},
+      {en:"to help",de:"helfen",hint:"infinitive — irregular"},
+      {en:"to need",de:"brauchen",hint:"infinitive — regular"},
+      {en:"to give",de:"geben",hint:"infinitive — irregular"},
+      {en:"to take",de:"nehmen",hint:"infinitive — irregular"},
+      {en:"to find",de:"finden",hint:"infinitive — irregular"},
+      {en:"to hear",de:"hören",hint:"infinitive — regular"},
+      {en:"to open",de:"öffnen",hint:"infinitive — regular"},
+      {en:"to close",de:"schließen",hint:"infinitive — irregular"},
+      {en:"to bring",de:"bringen",hint:"infinitive — mixed"},
+      {en:"to drive",de:"fahren",hint:"infinitive — irregular"},
+      {en:"to fly",de:"fliegen",hint:"infinitive — irregular"},
+      {en:"to run",de:"laufen",hint:"infinitive — irregular"},
+      {en:"to walk",de:"spazieren gehen",hint:"infinitive — phrase"},
+      {en:"to sit",de:"sitzen",hint:"infinitive — irregular"},
+      {en:"to stand",de:"stehen",hint:"infinitive — irregular"},
+      {en:"to lie down",de:"liegen",hint:"infinitive — irregular"},
+      {en:"to put / place upright",de:"stellen",hint:"infinitive — regular"},
+      {en:"to put / lay flat",de:"legen",hint:"infinitive — regular"},
+      {en:"to start / begin",de:"anfangen",hint:"infinitive — separable"},
+      {en:"to finish / stop",de:"aufhören",hint:"infinitive — separable"},
+      {en:"to wait",de:"warten",hint:"infinitive — regular"},
+      {en:"to ask",de:"fragen",hint:"infinitive — regular"},
+      {en:"to answer",de:"antworten",hint:"infinitive — regular"},
+      {en:"to call (phone)",de:"anrufen",hint:"infinitive — separable"},
+      {en:"to call (name)",de:"nennen",hint:"infinitive — mixed"},
+      {en:"to show",de:"zeigen",hint:"infinitive — regular"},
+      {en:"to look at",de:"schauen",hint:"infinitive — regular"},
+      {en:"to search / look for",de:"suchen",hint:"infinitive — regular"},
+      {en:"to meet",de:"treffen",hint:"infinitive — irregular"},
+      {en:"to visit",de:"besuchen",hint:"infinitive — regular"},
+      {en:"to play",de:"spielen",hint:"infinitive — regular"},
+      {en:"to sing",de:"singen",hint:"infinitive — irregular"},
+      {en:"to dance",de:"tanzen",hint:"infinitive — regular"},
+      {en:"to swim",de:"schwimmen",hint:"infinitive — irregular"},
+      {en:"to cook",de:"kochen",hint:"infinitive — regular"},
+      {en:"to clean",de:"putzen",hint:"infinitive — regular"},
+      {en:"to wash",de:"waschen",hint:"infinitive — irregular"},
+      {en:"to shower",de:"duschen",hint:"infinitive — regular"},
+      {en:"to get dressed",de:"sich anziehen",hint:"infinitive — reflexive, separable"},
+      {en:"to wake up",de:"aufwachen",hint:"infinitive — separable"},
+      {en:"to get up",de:"aufstehen",hint:"infinitive — separable"},
+      {en:"to go to bed",de:"ins Bett gehen",hint:"phrase"},
+      {en:"to travel",de:"reisen",hint:"infinitive — regular"},
+      {en:"to stay",de:"bleiben",hint:"infinitive — irregular"},
+      {en:"to arrive",de:"ankommen",hint:"infinitive — separable"},
+      {en:"to leave (a place)",de:"verlassen",hint:"infinitive — irregular"},
+      {en:"to go shopping",de:"einkaufen gehen",hint:"phrase"},
+      {en:"to sell",de:"verkaufen",hint:"infinitive — regular"},
+      {en:"to receive",de:"bekommen",hint:"infinitive — irregular"},
+      {en:"to send",de:"schicken",hint:"infinitive — regular"},
+      {en:"to count",de:"zählen",hint:"infinitive — regular"},
+      {en:"to cost",de:"kosten",hint:"infinitive — regular"},
+      {en:"to remember",de:"sich erinnern",hint:"infinitive — reflexive"},
+      {en:"to forget",de:"vergessen",hint:"infinitive — irregular"},
+      {en:"to try",de:"versuchen",hint:"infinitive — regular"},
+      {en:"to use",de:"benutzen",hint:"infinitive — regular"},
+      {en:"to change",de:"ändern",hint:"infinitive — regular"},
+      {en:"to happen",de:"passieren",hint:"infinitive — regular"},
+      {en:"to feel",de:"sich fühlen",hint:"infinitive — reflexive"},
+      {en:"to love",de:"lieben",hint:"infinitive — regular"},
+      {en:"to like",de:"mögen / gefallen",hint:"infinitive — two options"},
+      {en:"to hate",de:"hassen",hint:"infinitive — regular"},
+      {en:"to smile",de:"lächeln",hint:"infinitive — regular"},
+      {en:"to laugh",de:"lachen",hint:"infinitive — regular"},
+      {en:"to cry",de:"weinen",hint:"infinitive — regular"},
+      {en:"to hope",de:"hoffen",hint:"infinitive — regular"},
+      {en:"to believe",de:"glauben",hint:"infinitive — regular"},
+      {en:"to explain",de:"erklären",hint:"infinitive — regular"},
+      {en:"to repeat",de:"wiederholen",hint:"infinitive — regular"},
+      {en:"to continue",de:"weitermachen",hint:"infinitive — separable"},
+    ]
+  },
+  {
+    id: "conjugation", name: "Conjugation", icon: "✏️",
+    words: [
+      {en:"gehen — ich ___",de:"gehe",hint:"to go, 1st sg."},
+      {en:"gehen — du ___",de:"gehst",hint:"to go, 2nd sg."},
+      {en:"gehen — er/sie/es ___",de:"geht",hint:"to go, 3rd sg."},
+      {en:"gehen — wir ___",de:"gehen",hint:"to go, 1st pl."},
+      {en:"gehen — ihr ___",de:"geht",hint:"to go, 2nd pl."},
+      {en:"gehen — Sie ___",de:"gehen",hint:"to go, formal"},
+      {en:"haben — ich ___",de:"habe",hint:"to have, 1st sg."},
+      {en:"haben — du ___",de:"hast",hint:"to have, 2nd sg."},
+      {en:"haben — er/sie/es ___",de:"hat",hint:"to have, 3rd sg."},
+      {en:"haben — wir ___",de:"haben",hint:"to have, 1st pl."},
+      {en:"haben — ihr ___",de:"habt",hint:"to have, 2nd pl."},
+      {en:"haben — Sie ___",de:"haben",hint:"to have, formal"},
+      {en:"sein — ich ___",de:"bin",hint:"to be, 1st sg."},
+      {en:"sein — du ___",de:"bist",hint:"to be, 2nd sg."},
+      {en:"sein — er/sie/es ___",de:"ist",hint:"to be, 3rd sg."},
+      {en:"sein — wir ___",de:"sind",hint:"to be, 1st pl."},
+      {en:"sein — ihr ___",de:"seid",hint:"to be, 2nd pl."},
+      {en:"sein — Sie ___",de:"sind",hint:"to be, formal"},
+      {en:"machen — ich ___",de:"mache",hint:"to make, 1st sg."},
+      {en:"machen — du ___",de:"machst",hint:"to make, 2nd sg."},
+      {en:"machen — er/sie/es ___",de:"macht",hint:"to make, 3rd sg."},
+      {en:"machen — wir ___",de:"machen",hint:"to make, 1st pl."},
+      {en:"machen — ihr ___",de:"macht",hint:"to make, 2nd pl."},
+      {en:"sprechen — ich ___",de:"spreche",hint:"to speak, 1st sg."},
+      {en:"sprechen — du ___",de:"sprichst",hint:"to speak, 2nd sg. — vowel change"},
+      {en:"sprechen — er/sie/es ___",de:"spricht",hint:"to speak, 3rd sg. — vowel change"},
+      {en:"sprechen — wir ___",de:"sprechen",hint:"to speak, 1st pl."},
+      {en:"sprechen — ihr ___",de:"sprecht",hint:"to speak, 2nd pl."},
+      {en:"essen — ich ___",de:"esse",hint:"to eat, 1st sg."},
+      {en:"essen — du ___",de:"isst",hint:"to eat, 2nd sg. — vowel change"},
+      {en:"essen — er/sie/es ___",de:"isst",hint:"to eat, 3rd sg. — vowel change"},
+      {en:"essen — wir ___",de:"essen",hint:"to eat, 1st pl."},
+      {en:"essen — ihr ___",de:"esst",hint:"to eat, 2nd pl."},
+      {en:"kommen — ich ___",de:"komme",hint:"to come, 1st sg."},
+      {en:"kommen — du ___",de:"kommst",hint:"to come, 2nd sg."},
+      {en:"kommen — er/sie/es ___",de:"kommt",hint:"to come, 3rd sg."},
+      {en:"kommen — wir ___",de:"kommen",hint:"to come, 1st pl."},
+      {en:"kommen — ihr ___",de:"kommt",hint:"to come, 2nd pl."},
+      {en:"wollen — ich ___",de:"will",hint:"to want, 1st sg. — modal"},
+      {en:"wollen — du ___",de:"willst",hint:"to want, 2nd sg."},
+      {en:"wollen — er/sie/es ___",de:"will",hint:"to want, 3rd sg. — modal"},
+      {en:"wollen — wir ___",de:"wollen",hint:"to want, 1st pl."},
+      {en:"wollen — ihr ___",de:"wollt",hint:"to want, 2nd pl."},
+      {en:"können — ich ___",de:"kann",hint:"can, 1st sg. — modal"},
+      {en:"können — du ___",de:"kannst",hint:"can, 2nd sg."},
+      {en:"können — er/sie/es ___",de:"kann",hint:"can, 3rd sg. — modal"},
+      {en:"können — wir ___",de:"können",hint:"can, 1st pl."},
+      {en:"können — ihr ___",de:"könnt",hint:"can, 2nd pl."},
+      {en:"müssen — ich ___",de:"muss",hint:"must, 1st sg. — modal"},
+      {en:"müssen — du ___",de:"musst",hint:"must, 2nd sg."},
+      {en:"müssen — er/sie/es ___",de:"muss",hint:"must, 3rd sg. — modal"},
+      {en:"müssen — wir ___",de:"müssen",hint:"must, 1st pl."},
+      {en:"müssen — ihr ___",de:"müsst",hint:"must, 2nd pl."},
+      {en:"fahren — ich ___",de:"fahre",hint:"to drive, 1st sg."},
+      {en:"fahren — du ___",de:"fährst",hint:"to drive, 2nd sg. — umlaut"},
+      {en:"fahren — er/sie/es ___",de:"fährt",hint:"to drive, 3rd sg. — umlaut"},
+      {en:"fahren — wir ___",de:"fahren",hint:"to drive, 1st pl."},
+      {en:"fahren — ihr ___",de:"fahrt",hint:"to drive, 2nd pl."},
+      {en:"lesen — ich ___",de:"lese",hint:"to read, 1st sg."},
+      {en:"lesen — du ___",de:"liest",hint:"to read, 2nd sg. — vowel change"},
+      {en:"lesen — er/sie/es ___",de:"liest",hint:"to read, 3rd sg. — vowel change"},
+      {en:"lesen — wir ___",de:"lesen",hint:"to read, 1st pl."},
+      {en:"lesen — ihr ___",de:"lest",hint:"to read, 2nd pl."},
+      {en:"sehen — ich ___",de:"sehe",hint:"to see, 1st sg."},
+      {en:"sehen — du ___",de:"siehst",hint:"to see, 2nd sg. — vowel change"},
+      {en:"sehen — er/sie/es ___",de:"sieht",hint:"to see, 3rd sg. — vowel change"},
+      {en:"sehen — wir ___",de:"sehen",hint:"to see, 1st pl."},
+      {en:"sehen — ihr ___",de:"seht",hint:"to see, 2nd pl."},
+      {en:"nehmen — ich ___",de:"nehme",hint:"to take, 1st sg."},
+      {en:"nehmen — du ___",de:"nimmst",hint:"to take, 2nd sg. — strong change"},
+      {en:"nehmen — er/sie/es ___",de:"nimmt",hint:"to take, 3rd sg. — strong change"},
+      {en:"nehmen — wir ___",de:"nehmen",hint:"to take, 1st pl."},
+      {en:"nehmen — ihr ___",de:"nehmt",hint:"to take, 2nd pl."},
+      {en:"geben — ich ___",de:"gebe",hint:"to give, 1st sg."},
+      {en:"geben — du ___",de:"gibst",hint:"to give, 2nd sg. — vowel change"},
+      {en:"geben — er/sie/es ___",de:"gibt",hint:"to give, 3rd sg. — vowel change"},
+      {en:"geben — wir ___",de:"geben",hint:"to give, 1st pl."},
+      {en:"geben — ihr ___",de:"gebt",hint:"to give, 2nd pl."},
+      {en:"wissen — ich ___",de:"weiß",hint:"to know, 1st sg. — irregular"},
+      {en:"wissen — du ___",de:"weißt",hint:"to know, 2nd sg."},
+      {en:"wissen — er/sie/es ___",de:"weiß",hint:"to know, 3rd sg."},
+      {en:"wissen — wir ___",de:"wissen",hint:"to know, 1st pl."},
+      {en:"wissen — ihr ___",de:"wisst",hint:"to know, 2nd pl."},
+      {en:"schlafen — ich ___",de:"schlafe",hint:"to sleep, 1st sg."},
+      {en:"schlafen — du ___",de:"schläfst",hint:"to sleep, 2nd sg. — umlaut"},
+      {en:"schlafen — er/sie/es ___",de:"schläft",hint:"to sleep, 3rd sg. — umlaut"},
+      {en:"schlafen — wir ___",de:"schlafen",hint:"to sleep, 1st pl."},
+      {en:"schlafen — ihr ___",de:"schlaft",hint:"to sleep, 2nd pl."},
+      {en:"helfen — ich ___",de:"helfe",hint:"to help, 1st sg."},
+      {en:"helfen — du ___",de:"hilfst",hint:"to help, 2nd sg. — vowel change"},
+      {en:"helfen — er/sie/es ___",de:"hilft",hint:"to help, 3rd sg. — vowel change"},
+      {en:"helfen — wir ___",de:"helfen",hint:"to help, 1st pl."},
+      {en:"helfen — ihr ___",de:"helft",hint:"to help, 2nd pl."},
+      {en:"dürfen — ich ___",de:"darf",hint:"may/allowed, 1st sg. — modal"},
+      {en:"dürfen — du ___",de:"darfst",hint:"may/allowed, 2nd sg."},
+      {en:"dürfen — er/sie/es ___",de:"darf",hint:"may/allowed, 3rd sg. — modal"},
+      {en:"dürfen — wir ___",de:"dürfen",hint:"may/allowed, 1st pl."},
+      {en:"dürfen — ihr ___",de:"dürft",hint:"may/allowed, 2nd pl."},
+      {en:"sollen — ich ___",de:"soll",hint:"should, 1st sg. — modal"},
+      {en:"sollen — du ___",de:"sollst",hint:"should, 2nd sg."},
+      {en:"sollen — er/sie/es ___",de:"soll",hint:"should, 3rd sg. — modal"},
+      {en:"sollen — wir ___",de:"sollen",hint:"should, 1st pl."},
+      {en:"sollen — ihr ___",de:"sollt",hint:"should, 2nd pl."},
+      {en:"werden — ich ___",de:"werde",hint:"to become, 1st sg."},
+      {en:"werden — du ___",de:"wirst",hint:"to become, 2nd sg. — irregular"},
+      {en:"werden — er/sie/es ___",de:"wird",hint:"to become, 3rd sg. — irregular"},
+      {en:"werden — wir ___",de:"werden",hint:"to become, 1st pl."},
+      {en:"werden — ihr ___",de:"werdet",hint:"to become, 2nd pl."},
+      {en:"laufen — ich ___",de:"laufe",hint:"to run, 1st sg."},
+      {en:"laufen — du ___",de:"läufst",hint:"to run, 2nd sg. — umlaut"},
+      {en:"laufen — er/sie/es ___",de:"läuft",hint:"to run, 3rd sg. — umlaut"},
+      {en:"laufen — wir ___",de:"laufen",hint:"to run, 1st pl."},
+      {en:"laufen — ihr ___",de:"lauft",hint:"to run, 2nd pl."},
+      {en:"trinken — ich ___",de:"trinke",hint:"to drink, 1st sg."},
+      {en:"trinken — du ___",de:"trinkst",hint:"to drink, 2nd sg."},
+      {en:"trinken — er/sie/es ___",de:"trinkt",hint:"to drink, 3rd sg."},
+      {en:"trinken — wir ___",de:"trinken",hint:"to drink, 1st pl."},
+      {en:"trinken — ihr ___",de:"trinkt",hint:"to drink, 2nd pl."},
+      {en:"denken — ich ___",de:"denke",hint:"to think, 1st sg."},
+      {en:"denken — du ___",de:"denkst",hint:"to think, 2nd sg."},
+      {en:"denken — er/sie/es ___",de:"denkt",hint:"to think, 3rd sg."},
+      {en:"denken — wir ___",de:"denken",hint:"to think, 1st pl."},
+      {en:"denken — ihr ___",de:"denkt",hint:"to think, 2nd pl."},
+      {en:"arbeiten — ich ___",de:"arbeite",hint:"to work, 1st sg."},
+      {en:"arbeiten — du ___",de:"arbeitest",hint:"to work, 2nd sg. — -e- inserted"},
+      {en:"arbeiten — er/sie/es ___",de:"arbeitet",hint:"to work, 3rd sg. — -e- inserted"},
+      {en:"arbeiten — wir ___",de:"arbeiten",hint:"to work, 1st pl."},
+      {en:"arbeiten — ihr ___",de:"arbeitet",hint:"to work, 2nd pl."},
+    ]
+  },
+  {
+    id: "numbers_time", name: "Numbers & Time", icon: "🕐",
+    words: [
+      {en:"zero",de:"null",hint:"number"},
+      {en:"one",de:"eins",hint:"number"},
+      {en:"two",de:"zwei",hint:"number"},
+      {en:"three",de:"drei",hint:"number"},
+      {en:"four",de:"vier",hint:"number"},
+      {en:"five",de:"fünf",hint:"number"},
+      {en:"six",de:"sechs",hint:"number"},
+      {en:"seven",de:"sieben",hint:"number"},
+      {en:"eight",de:"acht",hint:"number"},
+      {en:"nine",de:"neun",hint:"number"},
+      {en:"ten",de:"zehn",hint:"number"},
+      {en:"eleven",de:"elf",hint:"number"},
+      {en:"twelve",de:"zwölf",hint:"number"},
+      {en:"thirteen",de:"dreizehn",hint:"number"},
+      {en:"twenty",de:"zwanzig",hint:"number"},
+      {en:"thirty",de:"dreißig",hint:"number"},
+      {en:"fifty",de:"fünfzig",hint:"number"},
+      {en:"hundred",de:"hundert",hint:"number"},
+      {en:"thousand",de:"tausend",hint:"number"},
+      {en:"first",de:"erste",hint:"ordinal"},
+      {en:"second",de:"zweite",hint:"ordinal"},
+      {en:"third",de:"dritte",hint:"ordinal"},
+      {en:"Monday",de:"Montag",hint:"day"},
+      {en:"Tuesday",de:"Dienstag",hint:"day"},
+      {en:"Wednesday",de:"Mittwoch",hint:"day"},
+      {en:"Thursday",de:"Donnerstag",hint:"day"},
+      {en:"Friday",de:"Freitag",hint:"day"},
+      {en:"Saturday",de:"Samstag",hint:"day"},
+      {en:"Sunday",de:"Sonntag",hint:"day"},
+      {en:"January",de:"Januar",hint:"month"},
+      {en:"February",de:"Februar",hint:"month"},
+      {en:"March",de:"März",hint:"month"},
+      {en:"April",de:"April",hint:"month"},
+      {en:"May",de:"Mai",hint:"month"},
+      {en:"June",de:"Juni",hint:"month"},
+      {en:"July",de:"Juli",hint:"month"},
+      {en:"August",de:"August",hint:"month"},
+      {en:"September",de:"September",hint:"month"},
+      {en:"October",de:"Oktober",hint:"month"},
+      {en:"November",de:"November",hint:"month"},
+      {en:"December",de:"Dezember",hint:"month"},
+      {en:"what time is it?",de:"Wie spät ist es?",hint:"phrase"},
+      {en:"half past",de:"halb",hint:"time expression"},
+      {en:"quarter past",de:"Viertel nach",hint:"time expression"},
+      {en:"quarter to",de:"Viertel vor",hint:"time expression"},
+      {en:"the morning",de:"der Morgen",hint:"time of day"},
+      {en:"the afternoon",de:"der Nachmittag",hint:"time of day"},
+      {en:"the evening",de:"der Abend",hint:"time of day"},
+      {en:"the night",de:"die Nacht",hint:"time of day"},
+      {en:"the week",de:"die Woche",pl:"die Wochen",hint:"noun + article"},
+      {en:"the month",de:"der Monat",pl:"die Monate",hint:"noun + article"},
+      {en:"the year",de:"das Jahr",pl:"die Jahre",hint:"noun + article"},
+      {en:"the hour",de:"die Stunde",pl:"die Stunden",hint:"noun + article"},
+      {en:"the minute",de:"die Minute",pl:"die Minuten",hint:"noun + article"},
+    ]
+  }
+];
+
+// ─────────────────────────────────────────────
+// APP STATE
+// ─────────────────────────────────────────────
+const STORAGE_KEY = "german_vocab_v4";
+let state = loadState();
+let selectedIds = new Set();
+let activeWords = [];
+let currentWord = null;
+let answered = false;
+let showStats = false;
+let hardestFirst = false;
+let deVoice = null;
+
+function loadState() {
+  try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r); } catch(e) {}
+  return { words: {} };
+}
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+function getWS(deckId, idx) {
+  const key = deckId + "_" + idx;
+  if (!state.words[key]) state.words[key] = { correct:0, wrong:0, streak:0 };
+  return state.words[key];
+}
+
+// ─────────────────────────────────────────────
+// AUDIO
+// ─────────────────────────────────────────────
+function initVoice() {
+  if (!window.speechSynthesis) return;
+  const load = () => {
+    const voices = speechSynthesis.getVoices();
+    deVoice = voices.find(v => v.lang === "de-DE") ||
+              voices.find(v => v.lang.startsWith("de")) || null;
+  };
+  load();
+  speechSynthesis.onvoiceschanged = load;
+}
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = "de-DE";
+  utt.rate = 0.85;
+  if (deVoice) utt.voice = deVoice;
+  speechSynthesis.speak(utt);
+}
+
+// ─────────────────────────────────────────────
+// ANSWER CHECKING
+// ─────────────────────────────────────────────
+function stripAccents(s) { return s.normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
+function normalize(s) { return stripAccents(s.trim().toLowerCase()).replace(/\s+/g," "); }
+function isCorrect(input, answer) {
+  if (!input.trim()) return false;
+  const ni = normalize(input);
+  if (ni === normalize(answer)) return true;
+  return answer.split("/").map(p => normalize(p.trim())).some(p => ni === p);
+}
+
+// ─────────────────────────────────────────────
+// SPACED REPETITION
+// ─────────────────────────────────────────────
+function getWeight(w) {
+  const ws = getWS(w.deckId, w.idx);
+  if (hardestFirst) return ws.wrong - ws.correct;
+  if (ws.streak >= 5) return Math.max(1, 8 - ws.streak);
+  if (ws.wrong > ws.correct && ws.wrong > 0) return 10 + ws.wrong * 2;
+  return 5;
+}
+function pickNext() {
+  if (!activeWords.length) return null;
+  if (hardestFirst) {
+    return [...activeWords].sort((a,b) => getWeight(b) - getWeight(a))[0];
+  }
+  const weights = activeWords.map(w => Math.max(1, getWeight(w)));
+  const total = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random() * total;
+  for (let i = 0; i < weights.length; i++) { r -= weights[i]; if (r <= 0) return activeWords[i]; }
+  return activeWords[activeWords.length-1];
+}
+
+// ─────────────────────────────────────────────
+// FOLDER SELECTION
+// ─────────────────────────────────────────────
+function deckProgress(deck) {
+  const mastered = deck.words.filter((_,i) => getWS(deck.id,i).streak >= 5).length;
+  return { mastered, total: deck.words.length };
+}
+function toggleFolder(id) {
+  if (selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
+  renderFolders();
+  renderStartBar();
+}
+function renderFolders() {
+  document.getElementById("folders-grid").innerHTML = DECKS.map(deck => {
+    const {mastered,total} = deckProgress(deck);
+    const pct = Math.round((mastered/total)*100);
+    const sel = selectedIds.has(deck.id);
+    return `<div class="folder-card ${sel?"selected":""}" onclick="toggleFolder('${deck.id}')">
+      <div class="folder-check">✓</div>
+      <div class="folder-icon">${deck.icon}</div>
+      <div class="folder-name">${deck.name}</div>
+      <div class="folder-meta">${total} words · ${mastered} mastered</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join("");
+}
+function renderStartBar() {
+  const bar = document.getElementById("start-bar");
+  if (selectedIds.size === 0) { bar.style.display = "none"; return; }
+  const total = [...selectedIds].reduce((s,id) => s + (DECKS.find(d=>d.id===id)?.words.length||0), 0);
+  const names = [...selectedIds].map(id => DECKS.find(d=>d.id===id)?.name).filter(Boolean).join(", ");
+  bar.style.display = "flex";
+  bar.innerHTML = `
+    <div class="start-bar-left"><strong>${selectedIds.size}</strong> folder${selectedIds.size>1?"s":""} · <strong>${total}</strong> words<br><span style="font-size:11px;color:#aaa">${names}</span></div>
+    <div class="start-bar-right">
+      <div class="mode-toggle">
+        <button class="mode-btn ${!hardestFirst?"active":""}" onclick="setMode(false)">Random</button>
+        <button class="mode-btn ${hardestFirst?"active":""}" onclick="setMode(true)">Hardest first</button>
+      </div>
+      <button class="start-btn" onclick="startDrill()">Start ▶</button>
+    </div>`;
+}
+function setMode(val) { hardestFirst = val; renderStartBar(); }
+function startDrill() {
+  activeWords = [];
+  selectedIds.forEach(id => {
+    const deck = DECKS.find(d=>d.id===id);
+    if (!deck) return;
+    deck.words.forEach((w,i) => activeWords.push({...w, deckId:id, deckName:deck.name, idx:i}));
+  });
+  showStats = false;
+  document.getElementById("stats-view").style.display = "none";
+  document.getElementById("stats-btn").textContent = "Stats";
+  nextWord();
+}
+
+// ─────────────────────────────────────────────
+// DRILL
+// ─────────────────────────────────────────────
+function nextWord() {
+  if (!activeWords.length) return;
+  answered = false;
+  currentWord = pickNext();
+  renderDrill();
+}
+function miniStats(ws) {
+  return `
+    <div class="mini-stat"><div class="mini-label">correct</div><div class="mini-val">${ws.correct}</div></div>
+    <div class="mini-stat"><div class="mini-label">wrong</div><div class="mini-val">${ws.wrong}</div></div>
+    <div class="mini-stat"><div class="mini-label">streak</div><div class="mini-val">${ws.streak}</div></div>
+    <div class="mini-stat"><div class="mini-label">mastered</div><div class="mini-val">${ws.streak>=5?"✓":"—"}</div></div>`;
+}
+function renderDrill() {
+  const el = document.getElementById("drill-area");
+  el.style.display = "block";
+  if (!currentWord) return;
+  const ws = getWS(currentWord.deckId, currentWord.idx);
+  const badges = [
+    ws.streak>=5 ? `<span class="mastered-badge">✓ mastered</span>` : "",
+    ws.streak>0&&ws.streak<5 ? `<span class="streak-badge">🔥 ${ws.streak} streak</span>` : ""
+  ].join(" ");
+  const deckNames = [...selectedIds].map(id=>DECKS.find(d=>d.id===id)?.name).filter(Boolean).join(" + ");
+  el.innerHTML = `
+    <div class="drill-top">
+      <div class="deck-label">${deckNames}</div>
+      <div class="drill-counters">correct <span>${ws.correct}</span> &nbsp; wrong <span>${ws.wrong}</span></div>
+    </div>
+    <div class="word-display">
+      <div class="english-word">${currentWord.en}</div>
+      <div class="word-hint">${currentWord.hint} ${badges}</div>
+    </div>
+    <input type="text" class="german-input" id="german-input" placeholder="type in German…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="handleKey(event)" />
+    <div class="action-row">
+      <button class="check-btn" onclick="checkAnswer()">Check</button>
+      <button class="dontknow-btn" onclick="dontKnow()">? Don't know</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <div class="stats-row" id="stats-row">${miniStats(ws)}</div>`;
+  setTimeout(() => { const i = document.getElementById("german-input"); if(i) i.focus(); }, 50);
+}
+function showFeedback(correct, ws) {
+  const pluralHtml = currentWord.pl ? `<div class="plural-text">plural: ${currentWord.pl}</div>` : "";
+  const cls = correct ? "correct" : "wrong";
+  const icon = correct ? "✓" : "✗";
+  document.getElementById("feedback").innerHTML = `
+    <div class="feedback-left">
+      <div class="feedback-text ${cls}">${icon} ${correct?"Correct!":"Answer:"} <strong>${currentWord.de}</strong></div>
+      ${pluralHtml}
+    </div>
+    <div class="feedback-right">
+      <button class="audio-btn" onclick="speak('${currentWord.de.replace(/'/g,"\\'")}')">🔊</button>
+      <button class="next-btn" onclick="nextWord()">Next →</button>
+    </div>`;
+  speak(currentWord.de);
+  document.getElementById("stats-row").innerHTML = miniStats(ws);
+}
+function handleKey(e) {
+  if (e.key==="Enter") { if (answered) nextWord(); else checkAnswer(); }
+}
+function checkAnswer() {
+  if (answered) return;
+  const input = document.getElementById("german-input");
+  if (!input||!currentWord) return;
+  if (!input.value.trim()) { dontKnow(); return; }
+  answered = true;
+  const correct = isCorrect(input.value, currentWord.de);
+  const ws = getWS(currentWord.deckId, currentWord.idx);
+  if (correct) { ws.correct++; ws.streak++; input.classList.add("correct"); }
+  else { ws.wrong++; ws.streak=0; input.classList.add("wrong"); }
+  saveState();
+  showFeedback(correct, ws);
+}
+function dontKnow() {
+  if (answered) return;
+  answered = true;
+  const ws = getWS(currentWord.deckId, currentWord.idx);
+  ws.wrong++; ws.streak=0;
+  const input = document.getElementById("german-input");
+  if (input) { input.value=currentWord.de; input.classList.add("wrong"); }
+  saveState();
+  showFeedback(false, ws);
+}
+
+// ─────────────────────────────────────────────
+// STATS VIEW
+// ─────────────────────────────────────────────
+function toggleStats() {
+  showStats = !showStats;
+  const sv = document.getElementById("stats-view");
+  const da = document.getElementById("drill-area");
+  const btn = document.getElementById("stats-btn");
+  if (showStats) {
+    sv.style.display="block"; da.style.display="none";
+    btn.textContent="← Back";
+    renderStatsView();
+  } else {
+    sv.style.display="none";
+    if (activeWords.length) da.style.display="block";
+    btn.textContent="Stats";
+  }
+}
+function renderStatsView() {
+  let html = `<div class="stats-title">Progress across all folders</div>`;
+  DECKS.forEach(deck => {
+    const {mastered,total} = deckProgress(deck);
+    html += `<div class="stats-section">
+      <div class="stats-section-title">${deck.icon} ${deck.name} — ${mastered}/${total} mastered</div>
+      <table><thead><tr><th>English</th><th>German</th><th>Plural</th><th>✓</th><th>✗</th><th>Streak</th></tr></thead><tbody>`;
+    deck.words.forEach((w,i) => {
+      const ws = getWS(deck.id,i);
+      const st = ws.streak>=5 ? `<span class="mastered-badge">mastered</span>`
+        : ws.streak>0 ? `<span class="streak-badge">${ws.streak}</span>`
+        : `<span style="color:#bbb">new</span>`;
+      html += `<tr><td>${w.en}</td><td style="color:#555">${w.de}</td><td style="color:#aaa">${w.pl||"—"}</td><td>${ws.correct}</td><td>${ws.wrong}</td><td>${st}</td></tr>`;
+    });
+    html += `</tbody></table></div>`;
+  });
+  document.getElementById("stats-view").innerHTML = html;
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+initVoice();
+renderFolders();
+</script>
+</body>
+</html>
