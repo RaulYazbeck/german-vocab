@@ -6,6 +6,7 @@
 <title>German Vocabulary</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <!-- Add new level: 1) create german_decks_aX.js, 2) add script tag, 3) add to ALL_GROUPS -->
@@ -82,6 +83,7 @@ h1{font-size:20px;font-weight:700;}
 .german-input.correct{border-color:#1D9E75;background:#f0faf6;}
 .german-input.wrong{border-color:#E24B4A;background:#fff5f5;}
 .german-input-wrong{border-color:#E24B4A;background:#fff5f5;}
+#timer-feedback{font-size:18px;font-weight:700;text-align:center;padding-top:8px;min-height:40px;}
 .action-row{display:flex;gap:8px;margin-bottom:1rem;}
 .check-btn{flex:1;height:40px;font-size:14px;border:1.5px solid #ddd;border-radius:10px;background:white;cursor:pointer;font-weight:500;}
 .check-btn:hover{background:#f5f5f3;}
@@ -226,7 +228,7 @@ let sessionConsecutive = 0;
 
 // Timer state
 let timerTotal = 0, timerLeft = 0, timerInterval = null;
-let timerQueue = [], timerCorrect = 0, timerWrong = 0, timerWordsDone = 0, timerFinished = false;
+let timerQueue = [], timerCorrect = 0, timerWrong = 0, timerWordsDone = 0, timerFinished = false, timerPaused = false;
 
 // Learn state
 let learnQueue = [], learnIndex = 0;
@@ -286,16 +288,36 @@ function currentLevel() {
   while (expForLevel(lv+1) <= S.exp) lv++;
   return lv;
 }
+function getDailyStreak() {
+  const dates = [...new Set(S.loginDates)].sort();
+  if (!dates.length) return 0;
+  let streak = 1;
+  const today = new Date().toISOString().slice(0,10);
+  const last = dates[dates.length-1];
+  if (last !== today) {
+    const diff = (new Date(today) - new Date(last)) / (1000*60*60*24);
+    if (diff > 1) return 0;
+  }
+  for (let i = dates.length-1; i > 0; i--) {
+    const diff = (new Date(dates[i]) - new Date(dates[i-1])) / (1000*60*60*24);
+    if (diff === 1) streak++;
+    else break;
+  }
+  return streak;
+}
 function renderExpBar() {
   const lv = currentLevel();
   const cur = S.exp - expForLevel(lv);
   const need = expForLevel(lv+1) - expForLevel(lv);
   const pct = Math.min(100, Math.round((cur/need)*100));
+  const streak = getDailyStreak();
+  const streakHtml = streak > 0 ? `<div style="font-size:13px;font-weight:600;color:#E25C1A;">🔥 ${streak} day${streak>1?"s":""}</div>` : "";
   document.getElementById("exp-bar").innerHTML = `
     <div class="exp-bar-wrap">
       <div class="exp-level">Lv ${lv}</div>
       <div class="exp-track"><div class="exp-fill" style="width:${pct}%"></div></div>
       <div class="exp-label">${cur}/${need} XP</div>
+      ${streakHtml}
     </div>`;
 }
 
@@ -570,10 +592,14 @@ function renderUnlockRow(containerId){
   container.innerHTML=rows.join("");
 }
 function focusInput(){
-  setTimeout(()=>{
-    const i=document.getElementById("german-input");
-    if(i){i.focus();try{i.setSelectionRange(0,0);}catch(e){}}
-  },50);
+  const ids=["german-input","timer-input"];
+  const attempt=(ms)=>setTimeout(()=>{
+    for(const id of ids){
+      const i=document.getElementById(id);
+      if(i){i.focus();return;}
+    }
+  },ms);
+  attempt(0);attempt(100);attempt(300);
 }
 function handleDrillKey(e){if(e.key==="Enter"){if(answered)nextDrillWord();else checkDrill();}}
 function checkDrill(){
@@ -636,8 +662,9 @@ function showDrillFeedback(correct,ws){
       </div>`;
   }
   document.getElementById("stats-row").innerHTML=miniStats(ws);
-  // refocus input to keep keyboard open
-  focusInput();
+  // keep keyboard open — do not blur, re-focus immediately
+  const inp=document.getElementById("german-input");
+  if(inp){inp.setAttribute("readonly","true");inp.removeAttribute("readonly");inp.focus();}
 }
 
 // ── LEARN MODE ────────────────────────────────
@@ -769,7 +796,7 @@ function renderTimerScreen(){
 }
 function handleTimerKey(e){if(e.key==="Enter")checkTimer();}
 function checkTimer(){
-  if(timerFinished)return;
+  if(timerFinished||timerPaused)return;
   const input=document.getElementById("timer-input");
   if(!input)return;
   const val=input.value;
@@ -792,9 +819,10 @@ function checkTimer(){
     focusInput();
   } else {
     timerWrong++;
+    timerPaused=true;
     clearInterval(timerInterval);
-    if(input){input.value="";input.className="german-input german-input-wrong";}
-    if(fb)fb.innerHTML=`<span style="color:#993C1D;font-weight:600;">✗ Answer: ${currentWord.de}</span>`;
+    if(input){input.value="";}
+    if(fb)fb.innerHTML=`<span style="color:#993C1D;font-weight:700;font-size:18px;">✗ ${currentWord.de}</span>`;
     document.getElementById("t-correct").textContent=timerCorrect;
     document.getElementById("t-wrong").textContent=timerWrong;
     // insert word back at random position ahead
@@ -808,6 +836,7 @@ function checkTimer(){
     timerWordsDone++;
     setTimeout(()=>{
       if(timerFinished)return;
+      timerPaused=false;
       currentWord=timerQueue[timerWordsDone];
       timerInterval=setInterval(timerTick,100);
       renderTimerScreen();
@@ -815,7 +844,7 @@ function checkTimer(){
   }
 }
 function skipTimer(){
-  if(timerFinished)return;
+  if(timerFinished||timerPaused)return;
   timerWrong++;
   const remaining=timerQueue.length-timerWordsDone-1;
   if(remaining>0){
