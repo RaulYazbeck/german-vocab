@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>German Vocabulary</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <!-- Add new level: 1) create german_decks_aX.js, 2) add script tag, 3) add to ALL_GROUPS -->
@@ -81,6 +81,7 @@ h1{font-size:20px;font-weight:700;}
 .german-input:focus{border-color:#1D9E75;box-shadow:0 0 0 3px rgba(29,158,117,0.12);}
 .german-input.correct{border-color:#1D9E75;background:#f0faf6;}
 .german-input.wrong{border-color:#E24B4A;background:#fff5f5;}
+.german-input-wrong{border-color:#E24B4A;background:#fff5f5;}
 .action-row{display:flex;gap:8px;margin-bottom:1rem;}
 .check-btn{flex:1;height:40px;font-size:14px;border:1.5px solid #ddd;border-radius:10px;background:white;cursor:pointer;font-weight:500;}
 .check-btn:hover{background:#f5f5f3;}
@@ -192,8 +193,7 @@ const UNLOCK_STEP = 5; // words unlocked per tap
 
 // EXP levels: level N requires BASE * RATIO^(N-1) cumulative XP
 const EXP_BASE = 100, EXP_RATIO = 1.4;
-function expForLevel(n) { return Math.round(EXP_BASE * (Math.pow(EXP_RATIO, n) - 1) / (EXP_RATIO - 1)); }
-
+function expForLevel(n) { if(n<=1)return 0; return Math.round(EXP_BASE * (Math.pow(EXP_RATIO, n-1) - 1) / (EXP_RATIO - 1)); }
 // BADGES definition
 const BADGE_DEFS = [
   {id:"first_correct",   icon:"🌱", name:"First Steps",    desc:"First correct answer"},
@@ -715,7 +715,7 @@ function startTimer(){
       timerQueue.push(...shuffled);
     }
   }
-  timerTotal=Math.round(4.1*timerQueue.length);
+  timerTotal=Math.round(4.5*timerQueue.length);
   timerLeft=timerTotal;
   timerCorrect=0;timerWrong=0;timerWordsDone=0;timerFinished=false;
   document.getElementById("main-screen").style.display="block";
@@ -776,13 +776,28 @@ function checkTimer(){
   if(!val.trim()){skipTimer();return;}
   const correct=isCorrect(val,currentWord.de);
   const fb=document.getElementById("timer-feedback");
+  S.totalCorrect+=correct?1:0;
+  saveState();
   if(correct){
     timerCorrect++;
     addExp(10);
-    if(fb)fb.innerHTML=`<span style="color:#0F6E56;font-weight:600;">✓ ${currentWord.de}</span>`;
+    timerWordsDone++;
+    if(timerWordsDone>=timerQueue.length){endTimer(true);return;}
+    currentWord=timerQueue[timerWordsDone];
+    if(input){input.value="";input.className="german-input";}
+    if(fb)fb.innerHTML=`<span style="color:#0F6E56;font-weight:600;">✓ Correct!</span>`;
+    document.getElementById("t-correct").textContent=timerCorrect;
+    document.getElementById("t-wrong").textContent=timerWrong;
+    updateTimerDisplay();
+    focusInput();
   } else {
     timerWrong++;
-    // add word back at random position in remaining queue
+    clearInterval(timerInterval);
+    if(input){input.value="";input.className="german-input german-input-wrong";}
+    if(fb)fb.innerHTML=`<span style="color:#993C1D;font-weight:600;">✗ Answer: ${currentWord.de}</span>`;
+    document.getElementById("t-correct").textContent=timerCorrect;
+    document.getElementById("t-wrong").textContent=timerWrong;
+    // insert word back at random position ahead
     const remaining=timerQueue.length-timerWordsDone-1;
     if(remaining>0){
       const insertAt=timerWordsDone+1+Math.floor(Math.random()*remaining);
@@ -790,18 +805,14 @@ function checkTimer(){
     } else {
       timerQueue.push({...currentWord});
     }
-    if(fb)fb.innerHTML=`<span style="color:#993C1D;font-weight:600;">✗ ${currentWord.de}</span>`;
+    timerWordsDone++;
+    setTimeout(()=>{
+      if(timerFinished)return;
+      currentWord=timerQueue[timerWordsDone];
+      timerInterval=setInterval(timerTick,100);
+      renderTimerScreen();
+    },3000);
   }
-  timerWordsDone++;
-  S.totalCorrect+=correct?1:0;
-  saveState();
-  if(timerWordsDone>=timerQueue.length&&correct){endTimer(true);return;}
-  currentWord=timerQueue[timerWordsDone];
-  if(input){input.value="";input.className="german-input";}
-  document.getElementById("t-correct").textContent=timerCorrect;
-  document.getElementById("t-wrong").textContent=timerWrong;
-  updateTimerDisplay();
-  focusInput();
 }
 function skipTimer(){
   if(timerFinished)return;
