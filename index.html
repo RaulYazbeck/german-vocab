@@ -229,7 +229,7 @@ let sessionConsecutive = 0;
 // Timer state
 let timerTotal = 0, timerLeft = 0, timerInterval = null;
 let timerQueue = [], timerCorrect = 0, timerWrong = 0, timerWordsDone = 0, timerFinished = false, timerPaused = false;
-let timerWordCount = 10;
+let timerWordCount = 10, timerExpEarned = 0;
 
 // Learn state
 let learnQueue = [], learnIndex = 0;
@@ -802,7 +802,7 @@ function startTimer(){
   timerQueue=timerQueue.slice(0,timerWordCount);
   timerTotal=Math.round(4.5*timerQueue.length);
   timerLeft=timerTotal;
-  timerCorrect=0;timerWrong=0;timerWordsDone=0;timerFinished=false;
+  timerCorrect=0;timerWrong=0;timerWordsDone=0;timerFinished=false;timerExpEarned=0;
   document.getElementById("main-screen").style.display="block";
   document.getElementById("groups-container").style.display="none";
   document.getElementById("start-bar").style.display="none";
@@ -866,6 +866,7 @@ function checkTimer(){
   if(correct){
     timerCorrect++;
     addExp(10);
+    timerExpEarned+=10;
     const wsT=getWS(currentWord.deckId,currentWord.idx);
     wsT.correct++;
     saveState();
@@ -896,7 +897,8 @@ function checkTimer(){
     const wordEl=document.getElementById("timer-word-display");
     if(wordEl)wordEl.style.opacity="0.3";
     if(input){input.value="";}
-    if(fb)fb.innerHTML=`<span style="color:#993C1D;font-weight:700;font-size:22px;">✗ ${currentWord.de}</span>`;
+    const typed=val.trim();
+    if(fb)fb.innerHTML=`<span style="color:#993C1D;font-weight:700;font-size:16px;text-decoration:line-through;">${typed}</span><span style="color:#993C1D;font-weight:400;font-size:16px;"> → </span><span style="color:#993C1D;font-weight:700;font-size:22px;">${currentWord.de}</span>`;
     document.getElementById("t-correct").textContent=timerCorrect;
     document.getElementById("t-wrong").textContent=timerWrong;
     setTimeout(()=>{
@@ -944,7 +946,7 @@ function endTimer(won){
   timerFinished=true;
   clearInterval(timerInterval);
   checkBadge("speed_demon");
-  if(won)addExp(50);
+  if(won){addExp(50);timerExpEarned+=50;}
   const el=document.getElementById("main-screen");
   el.innerHTML=`<div class="screen">
     <div class="result-screen">
@@ -954,7 +956,7 @@ function endTimer(won){
       <div>
         <div class="result-stat"><strong>${timerCorrect}</strong>correct</div>
         <div class="result-stat"><strong>${timerWrong}</strong>wrong</div>
-        <div class="result-stat"><strong>${addExp(0),S.exp} XP</strong>total</div>
+        <div class="result-stat"><strong>+${timerExpEarned} XP</strong>earned</div>
       </div>
       <button class="result-btn" onclick="backToMenu()">← Back to menu</button>
     </div></div>`;
