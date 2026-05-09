@@ -10,6 +10,23 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <!-- Add new level: 1) create german_decks_aX.js, 2) add script tag, 3) add to ALL_GROUPS -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAFJuGreU9sqf6TUSsyfggPNTZkF3YuCuY",
+  authDomain: "german-vocab-a.firebaseapp.com",
+  projectId: "german-vocab-a",
+  storageBucket: "german-vocab-a.firebasestorage.app",
+  messagingSenderId: "1006513229357",
+  appId: "1:1006513229357:web:dc345b52533cc502df32a4",
+  measurementId: "G-JZDZ713FYD"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+</script>
 <script src="german_decks_a1.js"></script>
 <script src="german_decks_a2.js"></script>
 <style>
@@ -190,12 +207,14 @@ tr:last-child td{border-bottom:none;}
 <body>
 <div class="app">
   <div class="header">
-    <h1>🇩🇪 Deutsch</h1>
+    <h1>🇩🇪 German Vocabulary</h1>
     <div class="header-right">
       <button class="hdr-btn" onclick="showScreen('badges')">🏆</button>
       <button class="hdr-btn" onclick="showScreen('stats')">Stats</button>
+      <button class="hdr-btn" id="auth-btn" onclick="handleAuth()">Sign in</button>
     </div>
   </div>
+  <div id="sync-status" style="font-size:11px;color:#aaa;text-align:right;margin-bottom:8px;margin-top:-8px;"></div>
   <div id="exp-bar"></div>
   <div id="groups-container"></div>
   <div id="start-bar" style="display:none"></div>
@@ -258,15 +277,77 @@ function loadState() {
 }
 function saveState() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); } catch(e) {}
+  saveToCloud();
 }
 function migrate() {
-  if (!S.words)       S.words = {};
-  if (!S.exp)         S.exp = 0;
-  if (!S.badges)      S.badges = [];
-  if (!S.unlocked)    S.unlocked = {};
-  if (!S.loginDates)  S.loginDates = [];
-  if (!S.totalCorrect)S.totalCorrect = 0;
+  if (!S.words)        S.words = {};
+  if (!S.exp)          S.exp = 0;
+  if (!S.badges)       S.badges = [];
+  if (!S.unlocked)     S.unlocked = {};
+  if (!S.loginDates)   S.loginDates = [];
+  if (!S.totalCorrect) S.totalCorrect = 0;
   if (!S.lastLoginDate)S.lastLoginDate = "";
+}
+
+// ── FIREBASE AUTH & SYNC ──────────────────────
+let currentUser = null;
+let syncTimeout = null;
+
+auth.onAuthStateChanged(user => {
+  currentUser = user;
+  const btn = document.getElementById("auth-btn");
+  const status = document.getElementById("sync-status");
+  if (user) {
+    if (btn) btn.textContent = user.displayName?.split(" ")[0] || "Signed in";
+    if (status) status.textContent = "☁️ Syncing...";
+    loadFromCloud();
+  } else {
+    if (btn) btn.textContent = "Sign in";
+    if (status) status.textContent = "";
+  }
+});
+
+function handleAuth() {
+  if (currentUser) {
+    if (confirm("Sign out?")) auth.signOut();
+  } else {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(e => alert("Sign in failed: " + e.message));
+  }
+}
+
+function loadFromCloud() {
+  if (!currentUser) return;
+  const status = document.getElementById("sync-status");
+  db.collection("users").doc(currentUser.uid).get().then(doc => {
+    if (doc.exists) {
+      const cloud = doc.data();
+      // merge: take whichever has more exp
+      if (cloud.exp && cloud.exp > S.exp) {
+        S = { ...S, ...cloud };
+        migrate();
+        saveState();
+        renderExpBar();
+        renderGroups();
+      }
+    }
+    if (status) status.textContent = "☁️ Synced";
+    setTimeout(() => { if (status) status.textContent = ""; }, 3000);
+  }).catch(e => {
+    if (status) status.textContent = "☁️ Sync failed";
+    console.error(e);
+  });
+}
+
+function saveToCloud() {
+  if (!currentUser) return;
+  clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(() => {
+    db.collection("users").doc(currentUser.uid).set(S).then(() => {
+      const status = document.getElementById("sync-status");
+      if (status) { status.textContent = "☁️ Saved"; setTimeout(() => { status.textContent = ""; }, 2000); }
+    }).catch(e => console.error("Cloud save failed:", e));
+  }, 1500); // debounce — wait 1.5s after last action before writing
 }
 
 // ── VOICE ─────────────────────────────────────
