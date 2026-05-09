@@ -993,96 +993,96 @@ const DECKS_A1 = {
 
         // FAHREN (ä-change)
         { en:"fahren — ich ___", de:"fahre", hint:"to drive, 1st sg.", examples:[{de:"Ich fahre mit dem Auto.",en:"I drive by car."}] },
-        { en:"fahren — du ___", de:"fährst", hint:"to drive, 2nd sg. — umlaut", examples:[{de:"Fährst du zur Arbeit?",en:"Do you drive to work?"}] },
-        { en:"fahren — er/sie/es ___", de:"fährt", hint:"to drive, 3rd sg. — umlaut", examples:[{de:"Er fährt jeden Tag nach Berlin.",en:"He drives to Berlin every day."}] },
+        { en:"fahren — du ___", de:"fährst", hint:"to drive, 2nd sg.", examples:[{de:"Fährst du zur Arbeit?",en:"Do you drive to work?"}] },
+        { en:"fahren — er/sie/es ___", de:"fährt", hint:"to drive, 3rd sg.", examples:[{de:"Er fährt jeden Tag nach Berlin.",en:"He drives to Berlin every day."}] },
         { en:"fahren — wir ___", de:"fahren", hint:"to drive, 1st pl.", examples:[{de:"Wir fahren um zwölf ab.",en:"We leave at twelve."}] },
         { en:"fahren — ihr ___", de:"fahrt", hint:"to drive, 2nd pl.", examples:[{de:"Fahrt ihr mit dem Zug?",en:"Are you going by train?"}] },
         { en:"fahren — sie/Sie ___", de:"fahren", hint:"to drive, 3rd pl. / formal", examples:[{de:"Sie fahren morgen in Urlaub.",en:"They are going on holiday tomorrow."}] },
 
         // SCHLAFEN (ä-change)
         { en:"schlafen — ich ___", de:"schlafe", hint:"to sleep, 1st sg.", examples:[{de:"Ich schlafe acht Stunden.",en:"I sleep eight hours."}] },
-        { en:"schlafen — du ___", de:"schläfst", hint:"to sleep, 2nd sg. — umlaut", examples:[{de:"Schläfst du gut?",en:"Do you sleep well?"}] },
-        { en:"schlafen — er/sie/es ___", de:"schläft", hint:"to sleep, 3rd sg. — umlaut", examples:[{de:"Das Baby schläft gerade.",en:"The baby is sleeping right now."}] },
+        { en:"schlafen — du ___", de:"schläfst", hint:"to sleep, 2nd sg.", examples:[{de:"Schläfst du gut?",en:"Do you sleep well?"}] },
+        { en:"schlafen — er/sie/es ___", de:"schläft", hint:"to sleep, 3rd sg.", examples:[{de:"Das Baby schläft gerade.",en:"The baby is sleeping right now."}] },
         { en:"schlafen — wir ___", de:"schlafen", hint:"to sleep, 1st pl.", examples:[{de:"Wir schlafen lange am Sonntag.",en:"We sleep in on Sunday."}] },
         { en:"schlafen — ihr ___", de:"schlaft", hint:"to sleep, 2nd pl.", examples:[{de:"Schlaft ihr schon?",en:"Are you already asleep?"}] },
         { en:"schlafen — sie/Sie ___", de:"schlafen", hint:"to sleep, 3rd pl. / formal", examples:[{de:"Sie schlafen noch.",en:"They are still sleeping."}] },
 
         // LAUFEN (ä-change)
         { en:"laufen — ich ___", de:"laufe", hint:"to run, 1st sg.", examples:[{de:"Ich laufe jeden Morgen.",en:"I run every morning."}] },
-        { en:"laufen — du ___", de:"läufst", hint:"to run, 2nd sg. — umlaut", examples:[{de:"Läufst du zur Schule?",en:"Do you run to school?"}] },
-        { en:"laufen — er/sie/es ___", de:"läuft", hint:"to run, 3rd sg. — umlaut", examples:[{de:"Er läuft sehr schnell.",en:"He runs very fast."}] },
+        { en:"laufen — du ___", de:"läufst", hint:"to run, 2nd sg.", examples:[{de:"Läufst du zur Schule?",en:"Do you run to school?"}] },
+        { en:"laufen — er/sie/es ___", de:"läuft", hint:"to run, 3rd sg.", examples:[{de:"Er läuft sehr schnell.",en:"He runs very fast."}] },
         { en:"laufen — wir ___", de:"laufen", hint:"to run, 1st pl.", examples:[{de:"Wir laufen im Park.",en:"We run in the park."}] },
         { en:"laufen — ihr ___", de:"lauft", hint:"to run, 2nd pl.", examples:[{de:"Lauft ihr jeden Tag?",en:"Do you run every day?"}] },
         { en:"laufen — sie/Sie ___", de:"laufen", hint:"to run, 3rd pl. / formal", examples:[{de:"Sie laufen zusammen.",en:"They run together."}] },
 
         // TRAGEN (ä-change)
         { en:"tragen — ich ___", de:"trage", hint:"to carry/wear, 1st sg.", examples:[{de:"Ich trage eine Jacke.",en:"I am wearing a jacket."}] },
-        { en:"tragen — du ___", de:"trägst", hint:"to carry/wear, 2nd sg. — umlaut", examples:[{de:"Trägst du den Koffer?",en:"Are you carrying the suitcase?"}] },
-        { en:"tragen — er/sie/es ___", de:"trägt", hint:"to carry/wear, 3rd sg. — umlaut", examples:[{de:"Er trägt eine schwarze Jacke.",en:"He is wearing a black jacket."}] },
+        { en:"tragen — du ___", de:"trägst", hint:"to carry/wear, 2nd sg.", examples:[{de:"Trägst du den Koffer?",en:"Are you carrying the suitcase?"}] },
+        { en:"tragen — er/sie/es ___", de:"trägt", hint:"to carry/wear, 3rd sg.", examples:[{de:"Er trägt eine schwarze Jacke.",en:"He is wearing a black jacket."}] },
         { en:"tragen — wir ___", de:"tragen", hint:"to carry/wear, 1st pl.", examples:[{de:"Wir tragen das Gepäck.",en:"We are carrying the luggage."}] },
         { en:"tragen — ihr ___", de:"tragt", hint:"to carry/wear, 2nd pl.", examples:[{de:"Tragt ihr die Koffer?",en:"Are you carrying the suitcases?"}] },
         { en:"tragen — sie/Sie ___", de:"tragen", hint:"to carry/wear, 3rd pl. / formal", examples:[{de:"Sie tragen Winterkleidung.",en:"They are wearing winter clothing."}] },
 
         // SEHEN (ie-change)
         { en:"sehen — ich ___", de:"sehe", hint:"to see, 1st sg.", examples:[{de:"Ich sehe das Problem.",en:"I see the problem."}] },
-        { en:"sehen — du ___", de:"siehst", hint:"to see, 2nd sg. — vowel change", examples:[{de:"Siehst du das Schild?",en:"Do you see the sign?"}] },
-        { en:"sehen — er/sie/es ___", de:"sieht", hint:"to see, 3rd sg. — vowel change", examples:[{de:"Er sieht gut aus.",en:"He looks good."}] },
+        { en:"sehen — du ___", de:"siehst", hint:"to see, 2nd sg.", examples:[{de:"Siehst du das Schild?",en:"Do you see the sign?"}] },
+        { en:"sehen — er/sie/es ___", de:"sieht", hint:"to see, 3rd sg.", examples:[{de:"Er sieht gut aus.",en:"He looks good."}] },
         { en:"sehen — wir ___", de:"sehen", hint:"to see, 1st pl.", examples:[{de:"Wir sehen uns morgen.",en:"We will see each other tomorrow."}] },
         { en:"sehen — ihr ___", de:"seht", hint:"to see, 2nd pl.", examples:[{de:"Seht ihr den Turm?",en:"Can you see the tower?"}] },
         { en:"sehen — sie/Sie ___", de:"sehen", hint:"to see, 3rd pl. / formal", examples:[{de:"Sie sehen müde aus.",en:"They look tired."}] },
 
         // LESEN (ie-change)
         { en:"lesen — ich ___", de:"lese", hint:"to read, 1st sg.", examples:[{de:"Ich lese ein Buch.",en:"I am reading a book."}] },
-        { en:"lesen — du ___", de:"liest", hint:"to read, 2nd sg. — vowel change", examples:[{de:"Liest du die Zeitung?",en:"Do you read the newspaper?"}] },
-        { en:"lesen — er/sie/es ___", de:"liest", hint:"to read, 3rd sg. — vowel change", examples:[{de:"Er liest jeden Tag die Zeitung.",en:"He reads the newspaper every day."}] },
+        { en:"lesen — du ___", de:"liest", hint:"to read, 2nd sg.", examples:[{de:"Liest du die Zeitung?",en:"Do you read the newspaper?"}] },
+        { en:"lesen — er/sie/es ___", de:"liest", hint:"to read, 3rd sg.", examples:[{de:"Er liest jeden Tag die Zeitung.",en:"He reads the newspaper every day."}] },
         { en:"lesen — wir ___", de:"lesen", hint:"to read, 1st pl.", examples:[{de:"Wir lesen viele Bücher.",en:"We read many books."}] },
         { en:"lesen — ihr ___", de:"lest", hint:"to read, 2nd pl.", examples:[{de:"Lest ihr auch Bücher?",en:"Do you read books too?"}] },
         { en:"lesen — sie/Sie ___", de:"lesen", hint:"to read, 3rd pl. / formal", examples:[{de:"Sie lesen gern.",en:"They like reading."}] },
 
         // EMPFEHLEN (ie-change)
         { en:"empfehlen — ich ___", de:"empfehle", hint:"to recommend, 1st sg.", examples:[{de:"Ich empfehle dieses Restaurant.",en:"I recommend this restaurant."}] },
-        { en:"empfehlen — du ___", de:"empfiehlst", hint:"to recommend, 2nd sg. — vowel change", examples:[{de:"Was empfiehlst du mir?",en:"What do you recommend to me?"}] },
-        { en:"empfehlen — er/sie/es ___", de:"empfiehlt", hint:"to recommend, 3rd sg. — vowel change", examples:[{de:"Er empfiehlt den Rotwein.",en:"He recommends the red wine."}] },
+        { en:"empfehlen — du ___", de:"empfiehlst", hint:"to recommend, 2nd sg.", examples:[{de:"Was empfiehlst du mir?",en:"What do you recommend to me?"}] },
+        { en:"empfehlen — er/sie/es ___", de:"empfiehlt", hint:"to recommend, 3rd sg.", examples:[{de:"Er empfiehlt den Rotwein.",en:"He recommends the red wine."}] },
         { en:"empfehlen — wir ___", de:"empfehlen", hint:"to recommend, 1st pl.", examples:[{de:"Wir empfehlen das Hotel.",en:"We recommend the hotel."}] },
         { en:"empfehlen — ihr ___", de:"empfehlt", hint:"to recommend, 2nd pl.", examples:[{de:"Was empfehlt ihr?",en:"What do you recommend?"}] },
         { en:"empfehlen — sie/Sie ___", de:"empfehlen", hint:"to recommend, 3rd pl. / formal", examples:[{de:"Sie empfehlen die Sehenswürdigkeiten.",en:"They recommend the sights."}] },
 
         // SPRECHEN (i-change)
         { en:"sprechen — ich ___", de:"spreche", hint:"to speak, 1st sg.", examples:[{de:"Ich spreche ein bisschen Deutsch.",en:"I speak a little German."}] },
-        { en:"sprechen — du ___", de:"sprichst", hint:"to speak, 2nd sg. — vowel change", examples:[{de:"Sprichst du Englisch?",en:"Do you speak English?"}] },
-        { en:"sprechen — er/sie/es ___", de:"spricht", hint:"to speak, 3rd sg. — vowel change", examples:[{de:"Er spricht sehr gut Deutsch.",en:"He speaks German very well."}] },
+        { en:"sprechen — du ___", de:"sprichst", hint:"to speak, 2nd sg.", examples:[{de:"Sprichst du Englisch?",en:"Do you speak English?"}] },
+        { en:"sprechen — er/sie/es ___", de:"spricht", hint:"to speak, 3rd sg.", examples:[{de:"Er spricht sehr gut Deutsch.",en:"He speaks German very well."}] },
         { en:"sprechen — wir ___", de:"sprechen", hint:"to speak, 1st pl.", examples:[{de:"Wir sprechen über das Thema.",en:"We are talking about the topic."}] },
         { en:"sprechen — ihr ___", de:"sprecht", hint:"to speak, 2nd pl.", examples:[{de:"Sprecht ihr Französisch?",en:"Do you speak French?"}] },
         { en:"sprechen — sie/Sie ___", de:"sprechen", hint:"to speak, 3rd pl. / formal", examples:[{de:"Sie sprechen sehr schnell.",en:"They speak very fast."}] },
 
         // HELFEN (i-change)
         { en:"helfen — ich ___", de:"helfe", hint:"to help, 1st sg.", examples:[{de:"Ich helfe dir gern.",en:"I am happy to help you."}] },
-        { en:"helfen — du ___", de:"hilfst", hint:"to help, 2nd sg. — vowel change", examples:[{de:"Hilfst du mir bitte?",en:"Will you please help me?"}] },
-        { en:"helfen — er/sie/es ___", de:"hilft", hint:"to help, 3rd sg. — vowel change", examples:[{de:"Er hilft seiner Mutter.",en:"He helps his mother."}] },
+        { en:"helfen — du ___", de:"hilfst", hint:"to help, 2nd sg.", examples:[{de:"Hilfst du mir bitte?",en:"Will you please help me?"}] },
+        { en:"helfen — er/sie/es ___", de:"hilft", hint:"to help, 3rd sg.", examples:[{de:"Er hilft seiner Mutter.",en:"He helps his mother."}] },
         { en:"helfen — wir ___", de:"helfen", hint:"to help, 1st pl.", examples:[{de:"Wir helfen den Gästen.",en:"We help the guests."}] },
         { en:"helfen — ihr ___", de:"helft", hint:"to help, 2nd pl.", examples:[{de:"Helft ihr auch mit?",en:"Are you helping too?"}] },
         { en:"helfen — sie/Sie ___", de:"helfen", hint:"to help, 3rd pl. / formal", examples:[{de:"Sie helfen gern.",en:"They are happy to help."}] },
 
         // NEHMEN (i-change)
         { en:"nehmen — ich ___", de:"nehme", hint:"to take, 1st sg.", examples:[{de:"Ich nehme den Bus.",en:"I take the bus."}] },
-        { en:"nehmen — du ___", de:"nimmst", hint:"to take, 2nd sg. — strong change", examples:[{de:"Nimmst du Zucker?",en:"Do you take sugar?"}] },
-        { en:"nehmen — er/sie/es ___", de:"nimmt", hint:"to take, 3rd sg. — strong change", examples:[{de:"Er nimmt das Taxi.",en:"He takes the taxi."}] },
+        { en:"nehmen — du ___", de:"nimmst", hint:"to take, 2nd sg.", examples:[{de:"Nimmst du Zucker?",en:"Do you take sugar?"}] },
+        { en:"nehmen — er/sie/es ___", de:"nimmt", hint:"to take, 3rd sg.", examples:[{de:"Er nimmt das Taxi.",en:"He takes the taxi."}] },
         { en:"nehmen — wir ___", de:"nehmen", hint:"to take, 1st pl.", examples:[{de:"Wir nehmen die S-Bahn.",en:"We take the S-Bahn."}] },
         { en:"nehmen — ihr ___", de:"nehmt", hint:"to take, 2nd pl.", examples:[{de:"Nehmt ihr das Auto?",en:"Are you taking the car?"}] },
         { en:"nehmen — sie/Sie ___", de:"nehmen", hint:"to take, 3rd pl. / formal", examples:[{de:"Sie nehmen den Zug.",en:"They take the train."}] },
 
         // GEBEN (i-change)
         { en:"geben — ich ___", de:"gebe", hint:"to give, 1st sg.", examples:[{de:"Ich gebe dir meine Nummer.",en:"I give you my number."}] },
-        { en:"geben — du ___", de:"gibst", hint:"to give, 2nd sg. — vowel change", examples:[{de:"Gibst du mir bitte das Salz?",en:"Can you give me the salt please?"}] },
-        { en:"geben — er/sie/es ___", de:"gibt", hint:"to give, 3rd sg. — vowel change", examples:[{de:"Er gibt mir keine Antwort.",en:"He gives me no answer."}] },
+        { en:"geben — du ___", de:"gibst", hint:"to give, 2nd sg.", examples:[{de:"Gibst du mir bitte das Salz?",en:"Can you give me the salt please?"}] },
+        { en:"geben — er/sie/es ___", de:"gibt", hint:"to give, 3rd sg.", examples:[{de:"Er gibt mir keine Antwort.",en:"He gives me no answer."}] },
         { en:"geben — wir ___", de:"geben", hint:"to give, 1st pl.", examples:[{de:"Wir geben das Buch zurück.",en:"We give the book back."}] },
         { en:"geben — ihr ___", de:"gebt", hint:"to give, 2nd pl.", examples:[{de:"Gebt ihr uns das Geld?",en:"Are you giving us the money?"}] },
         { en:"geben — sie/Sie ___", de:"geben", hint:"to give, 3rd pl. / formal", examples:[{de:"Sie geben gern Trinkgeld.",en:"They like to give tips."}] },
 
         // ESSEN (i-change)
         { en:"essen — ich ___", de:"esse", hint:"to eat, 1st sg.", examples:[{de:"Ich esse gern Fisch.",en:"I like eating fish."}] },
-        { en:"essen — du ___", de:"isst", hint:"to eat, 2nd sg. — vowel change", examples:[{de:"Isst du Fleisch?",en:"Do you eat meat?"}] },
-        { en:"essen — er/sie/es ___", de:"isst", hint:"to eat, 3rd sg. — vowel change", examples:[{de:"Er isst jeden Tag Brot.",en:"He eats bread every day."}] },
+        { en:"essen — du ___", de:"isst", hint:"to eat, 2nd sg.", examples:[{de:"Isst du Fleisch?",en:"Do you eat meat?"}] },
+        { en:"essen — er/sie/es ___", de:"isst", hint:"to eat, 3rd sg.", examples:[{de:"Er isst jeden Tag Brot.",en:"He eats bread every day."}] },
         { en:"essen — wir ___", de:"essen", hint:"to eat, 1st pl.", examples:[{de:"Wir essen um sieben.",en:"We eat at seven."}] },
         { en:"essen — ihr ___", de:"esst", hint:"to eat, 2nd pl.", examples:[{de:"Esst ihr schon?",en:"Are you already eating?"}] },
         { en:"essen — sie/Sie ___", de:"essen", hint:"to eat, 3rd pl. / formal", examples:[{de:"Sie essen im Restaurant.",en:"They are eating in the restaurant."}] },
