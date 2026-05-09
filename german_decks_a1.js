@@ -1086,8 +1086,8 @@ const DECKS_A1 = {
         { en:"essen — wir ___", de:"essen", hint:"to eat, 1st pl.", examples:[{de:"Wir essen um sieben.",en:"We eat at seven."}] },
         { en:"essen — ihr ___", de:"esst", hint:"to eat, 2nd pl.", examples:[{de:"Esst ihr schon?",en:"Are you already eating?"}] },
         { en:"essen — sie/Sie ___", de:"essen", hint:"to eat, 3rd pl. / formal", examples:[{de:"Sie essen im Restaurant.",en:"They are eating in the restaurant."}] },
-
       ]
     },
+    
   ]
 };
