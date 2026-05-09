@@ -83,7 +83,7 @@ h1{font-size:20px;font-weight:700;}
 .german-input.correct{border-color:#1D9E75;background:#f0faf6;}
 .german-input.wrong{border-color:#E24B4A;background:#fff5f5;}
 .german-input-wrong{border-color:#E24B4A;background:#fff5f5;}
-#timer-feedback{font-size:18px;font-weight:700;text-align:center;padding-top:8px;min-height:40px;}
+#timer-feedback{font-size:22px;font-weight:700;text-align:center;padding-top:8px;min-height:40px;}
 .action-row{display:flex;gap:8px;margin-bottom:1rem;}
 .check-btn{flex:1;height:40px;font-size:14px;border:1.5px solid #ddd;border-radius:10px;background:white;cursor:pointer;font-weight:500;}
 .check-btn:hover{background:#f5f5f3;}
@@ -359,14 +359,20 @@ function getWeight(w, focusMode=false){
   return 5;
 }
 function pickNext(focusMode=false){
-  const pool = focusMode ? activeWords.filter(w=>getWS(w.deckId,w.idx).streak<5) : activeWords;
-  if(!pool.length) return activeWords[Math.floor(Math.random()*activeWords.length)];
-  const weights=pool.map(w=>Math.max(focusMode?0:1,getWeight(w,focusMode)));
+  let pool = focusMode ? activeWords.filter(w=>getWS(w.deckId,w.idx).streak<5) : activeWords;
+  if(!pool.length) pool=activeWords;
+  if(!pool.length) return null;
+  // exclude last word shown unless pool has only 1 word
+  const filtered = pool.length > 1 && currentWord
+    ? pool.filter(w => !(w.deckId===currentWord.deckId && w.idx===currentWord.idx))
+    : pool;
+  const candidates = filtered.length ? filtered : pool;
+  const weights=candidates.map(w=>Math.max(focusMode?0:1,getWeight(w,focusMode)));
   const total=weights.reduce((a,b)=>a+b,0);
-  if(total===0) return pool[Math.floor(Math.random()*pool.length)];
+  if(total===0) return candidates[Math.floor(Math.random()*candidates.length)];
   let r=Math.random()*total;
-  for(let i=0;i<pool.length;i++){r-=weights[i];if(r<=0)return pool[i];}
-  return pool[pool.length-1];
+  for(let i=0;i<candidates.length;i++){r-=weights[i];if(r<=0)return candidates[i];}
+  return candidates[candidates.length-1];
 }
 
 // ── DECK HELPERS ──────────────────────────────
@@ -811,18 +817,16 @@ function checkTimer(){
     timerWordsDone++;
     if(timerWordsDone>=timerQueue.length){endTimer(true);return;}
     currentWord=timerQueue[timerWordsDone];
-    if(input){input.value="";input.className="german-input";}
-    if(fb)fb.innerHTML=`<span style="color:#0F6E56;font-weight:600;">✓ Correct!</span>`;
-    document.getElementById("t-correct").textContent=timerCorrect;
-    document.getElementById("t-wrong").textContent=timerWrong;
-    updateTimerDisplay();
+    renderTimerScreen();
+    const fb2=document.getElementById("timer-feedback");
+    if(fb2)fb2.innerHTML=`<span style="color:#0F6E56;font-weight:600;">✓ Correct!</span>`;
     focusInput();
   } else {
     timerWrong++;
     timerPaused=true;
     clearInterval(timerInterval);
     if(input){input.value="";}
-    if(fb)fb.innerHTML=`<span style="color:#993C1D;font-weight:700;font-size:18px;">✗ ${currentWord.de}</span>`;
+    if(fb)fb.innerHTML=`<span style="color:#993C1D;font-weight:700;font-size:22px;">✗ ${currentWord.de}</span>`;
     document.getElementById("t-correct").textContent=timerCorrect;
     document.getElementById("t-wrong").textContent=timerWrong;
     // insert word back at random position ahead
