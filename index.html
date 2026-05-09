@@ -866,6 +866,9 @@ function checkTimer(){
   if(correct){
     timerCorrect++;
     addExp(10);
+    const wsT=getWS(currentWord.deckId,currentWord.idx);
+    wsT.correct++;
+    saveState();
     timerWordsDone++;
     if(timerWordsDone>=timerQueue.length){endTimer(true);return;}
     currentWord=timerQueue[timerWordsDone];
@@ -875,6 +878,9 @@ function checkTimer(){
     focusInput();
   } else {
     timerWrong++;
+    const wsTw=getWS(currentWord.deckId,currentWord.idx);
+    wsTw.wrong++;
+    saveState();
     timerPaused=true;
     clearInterval(timerInterval);
     // insert word back at random position ahead
@@ -907,6 +913,9 @@ function skipTimer(){
   timerPaused=true;
   clearInterval(timerInterval);
   timerWrong++;
+  const wsSkip=getWS(currentWord.deckId,currentWord.idx);
+  wsSkip.wrong++;
+  saveState();
   const skipped=currentWord;
   const remaining=timerQueue.length-timerWordsDone-1;
   if(remaining>0){
