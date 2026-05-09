@@ -783,7 +783,7 @@ function learnNotYet(){
     if(actionsEl)actionsEl.parentNode.insertBefore(banner,actionsEl);
   }
   banner.textContent=`✗ ${w.de}`;
-  setTimeout(()=>{ renderLearnCard(); }, 2500);
+  setTimeout(()=>{ renderLearnCard(); }, 0);
 }
 function finishLearnStartDrill(){
   activeMode="classic";
