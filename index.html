@@ -329,13 +329,18 @@ function getUnlocked(deckId) {
   return S.unlocked[deckId];
 }
 function unlockMore(deckId) {
+  event.stopPropagation();
   const deck = getDeck(deckId);
   if (!deck) return;
-  S.unlocked[deckId] = Math.min(deck.words.length, getUnlocked(deckId) + UNLOCK_STEP);
-  checkBadge("polyglot");
+  const current = getUnlocked(deckId);
+  S.unlocked[deckId] = Math.min(deck.words.length, current + UNLOCK_STEP);
   saveState();
+  checkBadge("polyglot");
+  // rebuild active words if this deck is selected
+  if(selectedIds.has(deckId)) buildActiveWords();
   renderGroups();
   renderStartBar();
+  if(activeWords.length) renderUnlockRow("unlock-row-drill");
 }
 function unlockedWords(deck) {
   return deck.words.slice(0, getUnlocked(deck.id));
@@ -675,7 +680,16 @@ function showDrillFeedback(correct,ws){
 
 // ── LEARN MODE ────────────────────────────────
 function startLearn(){
-  learnQueue=[...activeWords];
+  // sort: never seen first, then by most wrong, then by least correct
+  learnQueue=[...activeWords].sort((a,b)=>{
+    const wa=getWS(a.deckId,a.idx), wb=getWS(b.deckId,b.idx);
+    const newA=wa.correct===0&&wa.wrong===0;
+    const newB=wb.correct===0&&wb.wrong===0;
+    if(newA&&!newB)return -1;
+    if(!newA&&newB)return 1;
+    // both seen: sort by weakness (wrong - correct descending)
+    return (wb.wrong-wb.correct)-(wa.wrong-wa.correct);
+  });
   learnIndex=0;
   document.getElementById("main-screen").style.display="block";
   document.getElementById("groups-container").style.display="none";
@@ -787,7 +801,7 @@ function renderTimerScreen(){
     </div>
     <div class="timer-bar-wrap"><div class="timer-bar-fill" id="timer-bar-fill" style="width:100%"></div></div>
     <div class="timer-score">✓ <strong id="t-correct">${timerCorrect}</strong> &nbsp; ✗ <strong id="t-wrong">${timerWrong}</strong> &nbsp; left: <strong>${timerQueue.length-timerWordsDone}</strong></div>
-    <div class="word-display">
+    <div class="word-display" id="timer-word-display">
       <div class="english-word">${currentWord.en}</div>
       <div class="word-hint">${currentWord.hint}</div>
     </div>
@@ -825,10 +839,6 @@ function checkTimer(){
     timerWrong++;
     timerPaused=true;
     clearInterval(timerInterval);
-    if(input){input.value="";}
-    if(fb)fb.innerHTML=`<span style="color:#993C1D;font-weight:700;font-size:22px;">✗ ${currentWord.de}</span>`;
-    document.getElementById("t-correct").textContent=timerCorrect;
-    document.getElementById("t-wrong").textContent=timerWrong;
     // insert word back at random position ahead
     const remaining=timerQueue.length-timerWordsDone-1;
     if(remaining>0){
@@ -838,6 +848,13 @@ function checkTimer(){
       timerQueue.push({...currentWord});
     }
     timerWordsDone++;
+    // show wrong answer — update word display in place, don't full re-render
+    const wordEl=document.getElementById("timer-word-display");
+    if(wordEl)wordEl.style.opacity="0.3";
+    if(input){input.value="";}
+    if(fb)fb.innerHTML=`<span style="color:#993C1D;font-weight:700;font-size:22px;">✗ ${currentWord.de}</span>`;
+    document.getElementById("t-correct").textContent=timerCorrect;
+    document.getElementById("t-wrong").textContent=timerWrong;
     setTimeout(()=>{
       if(timerFinished)return;
       timerPaused=false;
