@@ -1,232 +1,430 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>German Vocabulary</title>
-<!-- ─────────────────────────────────────────────
-  TO ADD A NEW LEVEL (e.g. A3):
-  1. Create german_decks_a3.js following the same format as the existing files
-  2. Add a <script> tag below pointing to it
-  3. Add DECKS_A3 to the ALL_GROUPS array in the script at the bottom
-───────────────────────────────────────────── -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<!-- Add new level: 1) create german_decks_aX.js, 2) add script tag, 3) add to ALL_GROUPS -->
 <script src="german_decks_a1.js"></script>
 <script src="german_decks_a2.js"></script>
-
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f3; color: #1a1a1a; min-height: 100vh; }
-.app { max-width: 720px; margin: 0 auto; padding: 2rem 1rem; }
-.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-h1 { font-size: 20px; font-weight: 600; }
-.view-btn { font-size: 13px; padding: 6px 14px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; color: #555; }
-.view-btn:hover { background: #f0f0f0; }
-.group { margin-bottom: 1.25rem; }
-.group-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: white; border: 1px solid #e0e0e0; border-radius: 10px; cursor: pointer; user-select: none; margin-bottom: 6px; }
-.group-header:hover { background: #f9f9f9; }
-.group-icon { font-size: 18px; }
-.group-name { font-size: 14px; font-weight: 600; flex: 1; }
-.group-meta { font-size: 12px; color: #aaa; }
-.group-chevron { font-size: 11px; color: #aaa; transition: transform 0.2s; display: inline-block; }
-.group-chevron.open { transform: rotate(90deg); }
-.group-decks { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; padding-left: 8px; }
-.group-decks.collapsed { display: none; }
-.folder-card { background: white; border: 1.5px solid #e0e0e0; border-radius: 12px; padding: 1rem; cursor: pointer; position: relative; user-select: none; transition: border-color 0.15s; }
-.folder-card:hover { border-color: #aaa; }
-.folder-card.selected { border: 2px solid #1D9E75; background: #f0faf6; }
-.folder-check { position: absolute; top: 10px; right: 10px; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #ccc; background: white; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; }
-.folder-card.selected .folder-check { background: #1D9E75; border-color: #1D9E75; color: white; }
-.folder-icon { font-size: 20px; margin-bottom: 8px; }
-.folder-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; padding-right: 22px; }
-.folder-meta { font-size: 11px; color: #888; }
-.progress-bar { height: 3px; background: #eee; border-radius: 2px; margin-top: 8px; overflow: hidden; }
-.progress-fill { height: 100%; background: #1D9E75; border-radius: 2px; }
-.start-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 1.5rem; padding: 12px 16px; background: white; border-radius: 10px; border: 1px solid #e0e0e0; }
-.start-bar-left { font-size: 13px; color: #555; }
-.start-bar-left strong { color: #1a1a1a; }
-.start-bar-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.mode-toggle { display: flex; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
-.mode-btn { font-size: 12px; padding: 6px 12px; background: transparent; border: none; cursor: pointer; color: #888; }
-.mode-btn.active { background: #f5f5f3; color: #1a1a1a; font-weight: 600; }
-.start-btn { font-size: 13px; font-weight: 600; padding: 7px 20px; background: #1D9E75; color: white; border: none; border-radius: 8px; cursor: pointer; }
-.start-btn:hover { background: #0F6E56; }
-.drill-area { background: white; border: 1px solid #e0e0e0; border-radius: 14px; padding: 2rem 1.5rem; }
-.drill-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-.deck-label { font-size: 12px; color: #888; max-width: 60%; }
-.drill-counters { display: flex; gap: 14px; font-size: 13px; color: #888; }
-.drill-counters span { font-weight: 600; color: #1a1a1a; }
-.word-display { text-align: center; margin-bottom: 2rem; }
-.english-word { font-size: 30px; font-weight: 600; margin-bottom: 6px; }
-.word-hint { font-size: 13px; color: #888; }
-.streak-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; background: #e6f7f2; color: #0F6E56; font-weight: 600; }
-.mastered-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; background: #eeecfd; color: #3C3489; font-weight: 600; }
-.german-input { width: 100%; height: 44px; padding: 0 14px; font-size: 16px; border: 1.5px solid #ddd; border-radius: 10px; background: white; color: #1a1a1a; outline: none; margin-bottom: 10px; }
-.german-input:focus { border-color: #1D9E75; box-shadow: 0 0 0 3px rgba(29,158,117,0.12); }
-.german-input.correct { border-color: #1D9E75; background: #f0faf6; }
-.german-input.wrong { border-color: #E24B4A; background: #fff5f5; }
-.action-row { display: flex; gap: 8px; margin-bottom: 1rem; }
-.check-btn { flex: 1; height: 40px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 10px; background: white; cursor: pointer; font-weight: 500; }
-.check-btn:hover { background: #f5f5f3; }
-.dontknow-btn { height: 40px; padding: 0 16px; font-size: 13px; border: 1.5px solid #ddd; border-radius: 10px; background: transparent; color: #888; cursor: pointer; white-space: nowrap; }
-.dontknow-btn:hover { background: #f5f5f3; color: #1a1a1a; }
-.feedback { min-height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 1rem; }
-.feedback-left { display: flex; flex-direction: column; gap: 4px; }
-.feedback-text { font-size: 14px; }
-.feedback-text.correct { color: #0F6E56; }
-.feedback-text.wrong { color: #993C1D; }
-.plural-text { font-size: 12px; color: #888; }
-.feedback-right { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-.next-btn { font-size: 13px; padding: 7px 16px; border: 1.5px solid #ddd; border-radius: 8px; background: white; cursor: pointer; }
-.next-btn:hover { background: #f5f5f3; }
-.audio-btn { font-size: 18px; padding: 6px 10px; border: 1.5px solid #ddd; border-radius: 8px; background: white; cursor: pointer; color: #555; }
-.audio-btn:hover { background: #f5f5f3; }
-.stats-row { display: flex; gap: 8px; padding-top: 1rem; border-top: 1px solid #eee; }
-.mini-stat { flex: 1; background: #f5f5f3; border-radius: 8px; padding: 8px 10px; }
-.mini-label { font-size: 11px; color: #888; margin-bottom: 2px; }
-.mini-val { font-size: 17px; font-weight: 600; }
-.stats-view { background: white; border: 1px solid #e0e0e0; border-radius: 14px; padding: 1.5rem; }
-.stats-title { font-size: 15px; font-weight: 600; margin-bottom: 1rem; }
-.stats-section { margin-bottom: 1.5rem; }
-.stats-section-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #555; }
-table { width: 100%; font-size: 13px; border-collapse: collapse; }
-th { text-align: left; font-weight: 600; color: #888; padding: 6px 8px; border-bottom: 1px solid #eee; }
-td { padding: 6px 8px; border-bottom: 1px solid #f0f0f0; }
-tr:last-child td { border-bottom: none; }
-@media (max-width: 480px) {
-  .app { padding: 1rem 0.75rem; }
-  .english-word { font-size: 24px; }
-  .start-bar { flex-direction: column; align-items: flex-start; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f5f3;color:#1a1a1a;min-height:100vh;}
+.app{max-width:720px;margin:0 auto;padding:1.5rem 1rem;}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+h1{font-size:20px;font-weight:700;}
+.header-right{display:flex;gap:8px;align-items:center;}
+.hdr-btn{font-size:13px;padding:6px 12px;border:1px solid #ddd;border-radius:8px;background:white;cursor:pointer;color:#555;}
+.hdr-btn:hover{background:#f0f0f0;}
+
+/* EXP BAR */
+.exp-bar-wrap{background:white;border:1px solid #e0e0e0;border-radius:10px;padding:10px 14px;margin-bottom:1rem;display:flex;align-items:center;gap:12px;}
+.exp-level{font-size:13px;font-weight:700;color:#1D9E75;white-space:nowrap;}
+.exp-track{flex:1;height:6px;background:#eee;border-radius:3px;overflow:hidden;}
+.exp-fill{height:100%;background:linear-gradient(90deg,#1D9E75,#34c896);border-radius:3px;transition:width 0.4s;}
+.exp-label{font-size:12px;color:#aaa;white-space:nowrap;}
+
+/* GROUPS */
+.group{margin-bottom:1rem;}
+.group-header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:white;border:1px solid #e0e0e0;border-radius:10px;cursor:pointer;user-select:none;margin-bottom:6px;}
+.group-header:hover{background:#f9f9f9;}
+.group-icon{font-size:18px;}
+.group-name{font-size:14px;font-weight:600;flex:1;}
+.group-meta{font-size:12px;color:#aaa;}
+.group-chevron{font-size:11px;color:#aaa;transition:transform 0.2s;display:inline-block;}
+.group-chevron.open{transform:rotate(90deg);}
+.group-decks{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;padding-left:8px;}
+.group-decks.collapsed{display:none;}
+
+/* DECK CARD */
+.folder-card{background:white;border:1.5px solid #e0e0e0;border-radius:12px;padding:1rem;cursor:pointer;position:relative;user-select:none;transition:border-color 0.15s;}
+.folder-card:hover{border-color:#aaa;}
+.folder-card.selected{border:2px solid #1D9E75;background:#f0faf6;}
+.folder-check{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;border:1.5px solid #ccc;background:white;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;}
+.folder-card.selected .folder-check{background:#1D9E75;border-color:#1D9E75;color:white;}
+.folder-icon{font-size:20px;margin-bottom:8px;}
+.folder-name{font-size:13px;font-weight:600;margin-bottom:3px;padding-right:22px;}
+.folder-meta{font-size:11px;color:#888;}
+.folder-unlock{font-size:11px;color:#1D9E75;margin-top:3px;font-weight:500;}
+.progress-bar{height:3px;background:#eee;border-radius:2px;margin-top:8px;overflow:hidden;}
+.progress-fill{height:100%;background:#1D9E75;border-radius:2px;}
+
+/* START BAR */
+.start-bar{background:white;border:1px solid #e0e0e0;border-radius:10px;padding:12px 14px;margin-bottom:1rem;}
+.start-bar-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+.start-bar-left{font-size:13px;color:#555;}
+.start-bar-left strong{color:#1a1a1a;}
+.mode-row{display:flex;gap:6px;flex-wrap:wrap;}
+.mode-pill{font-size:12px;padding:6px 14px;border:1.5px solid #ddd;border-radius:20px;background:white;cursor:pointer;color:#888;font-weight:500;transition:all 0.15s;}
+.mode-pill.active{border-color:#1D9E75;background:#f0faf6;color:#0F6E56;font-weight:600;}
+.start-btn{font-size:13px;font-weight:600;padding:8px 22px;background:#1D9E75;color:white;border:none;border-radius:8px;cursor:pointer;margin-top:10px;width:100%;}
+.start-btn:hover{background:#0F6E56;}
+
+/* SCREEN */
+.screen{background:white;border:1px solid #e0e0e0;border-radius:14px;padding:1.5rem;}
+.screen-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;}
+.screen-label{font-size:12px;color:#888;}
+.back-btn{font-size:13px;padding:5px 12px;border:1px solid #ddd;border-radius:8px;background:white;cursor:pointer;color:#555;}
+.back-btn:hover{background:#f0f0f0;}
+.word-display{text-align:center;margin-bottom:1.75rem;}
+.english-word{font-size:28px;font-weight:700;margin-bottom:6px;line-height:1.2;}
+.word-hint{font-size:13px;color:#888;}
+.streak-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px;background:#e6f7f2;color:#0F6E56;font-weight:600;}
+.mastered-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px;background:#eeecfd;color:#3C3489;font-weight:600;}
+.german-input{width:100%;height:44px;padding:0 14px;font-size:16px;border:1.5px solid #ddd;border-radius:10px;background:white;color:#1a1a1a;outline:none;margin-bottom:10px;}
+.german-input:focus{border-color:#1D9E75;box-shadow:0 0 0 3px rgba(29,158,117,0.12);}
+.german-input.correct{border-color:#1D9E75;background:#f0faf6;}
+.german-input.wrong{border-color:#E24B4A;background:#fff5f5;}
+.action-row{display:flex;gap:8px;margin-bottom:1rem;}
+.check-btn{flex:1;height:40px;font-size:14px;border:1.5px solid #ddd;border-radius:10px;background:white;cursor:pointer;font-weight:500;}
+.check-btn:hover{background:#f5f5f3;}
+.dontknow-btn{height:40px;padding:0 14px;font-size:13px;border:1.5px solid #ddd;border-radius:10px;background:transparent;color:#888;cursor:pointer;white-space:nowrap;}
+.dontknow-btn:hover{background:#f5f5f3;color:#1a1a1a;}
+.feedback{min-height:52px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:0.75rem;}
+.feedback-left{display:flex;flex-direction:column;gap:4px;}
+.feedback-text{font-size:14px;font-weight:500;}
+.feedback-text.correct{color:#0F6E56;}
+.feedback-text.wrong{color:#993C1D;}
+.plural-text{font-size:12px;color:#888;}
+.feedback-right{display:flex;gap:8px;align-items:center;flex-shrink:0;}
+.next-btn{font-size:13px;padding:7px 14px;border:1.5px solid #ddd;border-radius:8px;background:white;cursor:pointer;}
+.next-btn:hover{background:#f5f5f3;}
+.audio-btn{font-size:16px;padding:6px 10px;border:1.5px solid #ddd;border-radius:8px;background:white;cursor:pointer;}
+.audio-btn:hover{background:#f5f5f3;}
+.examples-wrap{background:#f9f9f9;border-radius:8px;padding:10px 12px;margin-bottom:0.75rem;}
+.examples-title{font-size:11px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+.example-row{margin-bottom:6px;}
+.example-de{font-size:13px;color:#1a1a1a;font-style:italic;}
+.example-en{font-size:12px;color:#888;}
+.stats-row{display:flex;gap:6px;padding-top:0.75rem;border-top:1px solid #eee;}
+.mini-stat{flex:1;background:#f5f5f3;border-radius:8px;padding:7px 8px;}
+.mini-label{font-size:10px;color:#888;margin-bottom:2px;}
+.mini-val{font-size:16px;font-weight:700;}
+
+/* UNLOCK ROW */
+.unlock-row{display:flex;align-items:center;justify-content:space-between;background:#f0faf6;border-radius:8px;padding:8px 12px;margin-bottom:1rem;}
+.unlock-info{font-size:13px;color:#0F6E56;font-weight:500;}
+.unlock-btn{font-size:12px;padding:5px 12px;border:1.5px solid #1D9E75;border-radius:8px;background:white;color:#1D9E75;cursor:pointer;font-weight:600;}
+.unlock-btn:hover{background:#f0faf6;}
+
+/* LEARNING MODE */
+.learn-card{text-align:center;padding:1rem 0;}
+.learn-de{font-size:36px;font-weight:700;margin-bottom:8px;}
+.learn-en{font-size:18px;color:#555;margin-bottom:4px;}
+.learn-hint{font-size:13px;color:#aaa;margin-bottom:16px;}
+.learn-actions{display:flex;gap:10px;justify-content:center;margin-top:1rem;}
+.learn-btn{flex:1;max-width:160px;height:44px;font-size:14px;font-weight:600;border-radius:10px;border:none;cursor:pointer;}
+.learn-btn.got-it{background:#1D9E75;color:white;}
+.learn-btn.not-yet{background:#f5f5f3;color:#555;border:1.5px solid #ddd;}
+.learn-progress{font-size:12px;color:#aaa;text-align:center;margin-bottom:1rem;}
+
+/* TIMER MODE */
+.timer-display{text-align:center;margin-bottom:1rem;}
+.timer-clock{font-size:42px;font-weight:700;font-variant-numeric:tabular-nums;color:#1a1a1a;}
+.timer-clock.urgent{color:#E24B4A;}
+.timer-bar-wrap{height:6px;background:#eee;border-radius:3px;overflow:hidden;margin-bottom:1.5rem;}
+.timer-bar-fill{height:100%;background:#1D9E75;border-radius:3px;transition:width 0.1s linear;}
+.timer-bar-fill.urgent{background:#E24B4A;}
+.timer-score{text-align:center;font-size:14px;color:#888;margin-bottom:1rem;}
+.timer-score strong{color:#1a1a1a;}
+.result-screen{text-align:center;padding:2rem 0;}
+.result-emoji{font-size:56px;margin-bottom:12px;}
+.result-title{font-size:22px;font-weight:700;margin-bottom:6px;}
+.result-sub{font-size:14px;color:#888;margin-bottom:1.5rem;}
+.result-stat{display:inline-block;background:#f5f5f3;border-radius:8px;padding:8px 16px;margin:4px;font-size:13px;}
+.result-stat strong{display:block;font-size:20px;font-weight:700;color:#1D9E75;}
+.result-btn{margin-top:1.5rem;padding:10px 28px;background:#1D9E75;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;}
+
+/* STATS & BADGES */
+.stats-section{margin-bottom:1.5rem;}
+.stats-section-title{font-size:13px;font-weight:600;margin-bottom:8px;color:#555;}
+table{width:100%;font-size:13px;border-collapse:collapse;}
+th{text-align:left;font-weight:600;color:#888;padding:6px 8px;border-bottom:1px solid #eee;}
+td{padding:6px 8px;border-bottom:1px solid #f0f0f0;}
+tr:last-child td{border-bottom:none;}
+.badges-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;}
+.badge-card{background:#f9f9f9;border:1px solid #eee;border-radius:10px;padding:10px;text-align:center;}
+.badge-card.earned{background:#f0faf6;border-color:#b2e8d4;}
+.badge-card.locked{opacity:0.4;}
+.badge-icon{font-size:28px;margin-bottom:4px;}
+.badge-name{font-size:12px;font-weight:600;color:#1a1a1a;margin-bottom:2px;}
+.badge-desc{font-size:11px;color:#888;}
+
+/* FOCUS MODE notice */
+.focus-notice{background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:8px 12px;font-size:12px;color:#856404;margin-bottom:1rem;text-align:center;}
+
+@media(max-width:480px){
+  .app{padding:1rem 0.75rem;}
+  .english-word{font-size:24px;}
+  .learn-de{font-size:28px;}
+  .timer-clock{font-size:32px;}
 }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="header">
-    <h1>🇩🇪 German Vocabulary</h1>
-    <button class="view-btn" id="stats-btn" onclick="toggleStats()">Stats</button>
+    <h1>🇩🇪 Deutsch</h1>
+    <div class="header-right">
+      <button class="hdr-btn" onclick="showScreen('badges')">🏆</button>
+      <button class="hdr-btn" onclick="showScreen('stats')">Stats</button>
+    </div>
   </div>
+  <div id="exp-bar"></div>
   <div id="groups-container"></div>
   <div id="start-bar" style="display:none"></div>
-  <div id="drill-area" style="display:none"></div>
-  <div id="stats-view" style="display:none"></div>
+  <div id="main-screen" style="display:none"></div>
 </div>
 
 <script>
-// ─────────────────────────────────────────────
-// REGISTER ALL GROUPS HERE
-// To add A3: create german_decks_a3.js, add its <script> tag in <head>, then add DECKS_A3 here
-// ─────────────────────────────────────────────
+// ── REGISTER GROUPS ──────────────────────────
 const ALL_GROUPS = [DECKS_A1, DECKS_A2];
 
-const STORAGE_KEY = "german_vocab_v4";
-let state = loadState();
+// ── CONSTANTS ────────────────────────────────
+const STORAGE_KEY = "gv5";
+const UNLOCK_STEP = 5; // words unlocked per tap
+
+// EXP levels: level N requires BASE * RATIO^(N-1) cumulative XP
+const EXP_BASE = 100, EXP_RATIO = 1.4;
+function expForLevel(n) { return Math.round(EXP_BASE * (Math.pow(EXP_RATIO, n) - 1) / (EXP_RATIO - 1)); }
+
+// BADGES definition
+const BADGE_DEFS = [
+  {id:"first_correct",   icon:"🌱", name:"First Steps",    desc:"First correct answer"},
+  {id:"on_fire",         icon:"🔥", name:"On Fire",        desc:"10 correct in one session"},
+  {id:"streak_3",        icon:"📅", name:"Dedicated",      desc:"3-day login streak"},
+  {id:"streak_7",        icon:"🗓️", name:"Committed",      desc:"7-day login streak"},
+  {id:"streak_30",       icon:"💎", name:"Obsessed",       desc:"30-day login streak"},
+  {id:"sharp",           icon:"🎯", name:"Sharp",          desc:"20 correct in a row"},
+  {id:"century",         icon:"📚", name:"Century",        desc:"100 total correct answers"},
+  {id:"mastery_10",      icon:"🏆", name:"Mastery",        desc:"10 words mastered"},
+  {id:"mastery_50",      icon:"👑", name:"Grand Master",   desc:"50 words mastered"},
+  {id:"speed_demon",     icon:"⚡", name:"Speed Demon",    desc:"Complete a timer session"},
+  {id:"polyglot",        icon:"🌍", name:"Polyglot",       desc:"All words unlocked in a deck"},
+  {id:"graduate",        icon:"🎓", name:"Graduate",       desc:"All words mastered in a deck"},
+];
+
+// ── STATE ─────────────────────────────────────
+let S = loadState();
 let selectedIds = new Set();
-let openGroups = new Set();
+let openGroups  = new Set();
+let activeMode  = "classic"; // classic | focus | learn | timer
 let activeWords = [];
 let currentWord = null;
-let answered = false;
-let showStats = false;
-let hardestFirst = false;
-let deVoice = null;
+let answered    = false;
+let deVoice     = null;
+
+// Session counters
+let sessionCorrect = 0;
+let sessionConsecutive = 0;
+
+// Timer state
+let timerTotal = 0, timerLeft = 0, timerInterval = null;
+let timerQueue = [], timerCorrect = 0, timerWrong = 0, timerWordsDone = 0, timerFinished = false;
+
+// Learn state
+let learnQueue = [], learnIndex = 0;
 
 function loadState() {
   try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r); } catch(e) {}
-  return { words: {} };
+  return { words:{}, exp:0, badges:[], unlocked:{}, loginDates:[], totalCorrect:0, lastLoginDate:"" };
 }
 function saveState() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); } catch(e) {}
 }
-function getWS(deckId, idx) {
-  const key = deckId + "_" + idx;
-  if (!state.words[key]) state.words[key] = { correct:0, wrong:0, streak:0 };
-  return state.words[key];
+function migrate() {
+  if (!S.words)       S.words = {};
+  if (!S.exp)         S.exp = 0;
+  if (!S.badges)      S.badges = [];
+  if (!S.unlocked)    S.unlocked = {};
+  if (!S.loginDates)  S.loginDates = [];
+  if (!S.totalCorrect)S.totalCorrect = 0;
+  if (!S.lastLoginDate)S.lastLoginDate = "";
 }
 
+// ── VOICE ─────────────────────────────────────
 function initVoice() {
   if (!window.speechSynthesis) return;
   const load = () => {
     const v = speechSynthesis.getVoices();
-    deVoice = v.find(x => x.lang === "de-DE") || v.find(x => x.lang.startsWith("de")) || null;
+    deVoice = v.find(x=>x.lang==="de-DE") || v.find(x=>x.lang.startsWith("de")) || null;
   };
-  load();
-  speechSynthesis.onvoiceschanged = load;
+  load(); speechSynthesis.onvoiceschanged = load;
 }
 function speak(text) {
   if (!window.speechSynthesis) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = "de-DE"; u.rate = 0.85;
-  if (deVoice) u.voice = deVoice;
+  u.lang="de-DE"; u.rate=0.85; if (deVoice) u.voice=deVoice;
   speechSynthesis.speak(u);
 }
 
-function stripAccents(s) { return s.normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
-function normalize(s) { return stripAccents(s.trim().toLowerCase()).replace(/\s+/g," "); }
-function isCorrect(input, answer) {
-  if (!input.trim()) return false;
-  const ni = normalize(input);
-  if (ni === normalize(answer)) return true;
-  return answer.split("/").map(p => normalize(p.trim())).some(p => ni === p);
+// ── ANSWER CHECK ──────────────────────────────
+function stripAccents(s){return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
+function normalize(s){return stripAccents(s.trim().toLowerCase()).replace(/\s+/g," ");}
+function isCorrect(input,answer){
+  if(!input.trim())return false;
+  const ni=normalize(input);
+  if(ni===normalize(answer))return true;
+  return answer.split("/").map(p=>normalize(p.trim())).some(p=>ni===p);
 }
 
-function getWeight(w) {
-  const ws = getWS(w.deckId, w.idx);
-  if (hardestFirst) return ws.wrong - ws.correct;
-  if (ws.streak >= 5) return Math.max(1, 8 - ws.streak);
-  if (ws.wrong > ws.correct && ws.wrong > 0) return 10 + ws.wrong * 2;
-  return 5;
+// ── EXP & LEVELS ──────────────────────────────
+function addExp(amount) {
+  S.exp += amount;
+  saveState();
+  renderExpBar();
 }
-function pickNext() {
-  if (!activeWords.length) return null;
-  if (hardestFirst) {
-    const sorted = [...activeWords].sort((a,b) => getWeight(b) - getWeight(a));
-    const top = getWeight(sorted[0]);
-    const tied = sorted.filter(w => getWeight(w) === top);
-    return tied[Math.floor(Math.random() * tied.length)];
-  }
-  const weights = activeWords.map(w => Math.max(1, getWeight(w)));
-  const total = weights.reduce((a,b)=>a+b,0);
-  let r = Math.random() * total;
-  for (let i = 0; i < weights.length; i++) { r -= weights[i]; if (r <= 0) return activeWords[i]; }
-  return activeWords[activeWords.length-1];
+function currentLevel() {
+  let lv = 1;
+  while (expForLevel(lv+1) <= S.exp) lv++;
+  return lv;
 }
-
-function getDeck(deckId) {
-  for (const g of ALL_GROUPS)
-    for (const d of g.decks)
-      if (d.id === deckId) return d;
-  return null;
-}
-function deckProgress(deck) {
-  const mastered = deck.words.filter((_,i) => getWS(deck.id,i).streak >= 5).length;
-  return { mastered, total: deck.words.length };
+function renderExpBar() {
+  const lv = currentLevel();
+  const cur = S.exp - expForLevel(lv);
+  const need = expForLevel(lv+1) - expForLevel(lv);
+  const pct = Math.min(100, Math.round((cur/need)*100));
+  document.getElementById("exp-bar").innerHTML = `
+    <div class="exp-bar-wrap">
+      <div class="exp-level">Lv ${lv}</div>
+      <div class="exp-track"><div class="exp-fill" style="width:${pct}%"></div></div>
+      <div class="exp-label">${cur}/${need} XP</div>
+    </div>`;
 }
 
-function toggleGroup(groupId) {
-  if (openGroups.has(groupId)) openGroups.delete(groupId);
-  else openGroups.add(groupId);
-  renderGroups();
+// ── UNLOCK SYSTEM ─────────────────────────────
+function getUnlocked(deckId) {
+  const deck = getDeck(deckId);
+  if (!deck) return 0;
+  if (S.unlocked[deckId] === undefined) S.unlocked[deckId] = Math.min(UNLOCK_STEP, deck.words.length);
+  return S.unlocked[deckId];
 }
-function toggleDeck(deckId) {
-  if (selectedIds.has(deckId)) selectedIds.delete(deckId);
-  else selectedIds.add(deckId);
+function unlockMore(deckId) {
+  const deck = getDeck(deckId);
+  if (!deck) return;
+  S.unlocked[deckId] = Math.min(deck.words.length, getUnlocked(deckId) + UNLOCK_STEP);
+  checkBadge("polyglot");
+  saveState();
   renderGroups();
   renderStartBar();
 }
-function renderGroups() {
-  document.getElementById("groups-container").innerHTML = ALL_GROUPS.map(group => {
-    const isOpen = openGroups.has(group.id);
-    const totalWords = group.decks.reduce((s,d) => s + d.words.length, 0);
-    const totalMastered = group.decks.reduce((s,d) => s + deckProgress(d).mastered, 0);
-    const decksHtml = group.decks.map(deck => {
-      const {mastered,total} = deckProgress(deck);
-      const pct = Math.round((mastered/total)*100);
-      const sel = selectedIds.has(deck.id);
+function unlockedWords(deck) {
+  return deck.words.slice(0, getUnlocked(deck.id));
+}
+
+// ── SPACED REPETITION ─────────────────────────
+function getWS(deckId,idx){
+  const key=deckId+"_"+idx;
+  if(!S.words[key])S.words[key]={correct:0,wrong:0,streak:0};
+  return S.words[key];
+}
+function getWeight(w, focusMode=false){
+  const ws=getWS(w.deckId,w.idx);
+  if(focusMode){
+    if(ws.streak>=5)return 0; // exclude mastered in focus
+    if(ws.wrong>ws.correct&&ws.wrong>0)return 10+ws.wrong*3;
+    return 5;
+  }
+  if(ws.streak>=5)return Math.max(1,8-ws.streak);
+  if(ws.wrong>ws.correct&&ws.wrong>0)return 10+ws.wrong*2;
+  return 5;
+}
+function pickNext(focusMode=false){
+  const pool = focusMode ? activeWords.filter(w=>getWS(w.deckId,w.idx).streak<5) : activeWords;
+  if(!pool.length) return activeWords[Math.floor(Math.random()*activeWords.length)];
+  const weights=pool.map(w=>Math.max(focusMode?0:1,getWeight(w,focusMode)));
+  const total=weights.reduce((a,b)=>a+b,0);
+  if(total===0) return pool[Math.floor(Math.random()*pool.length)];
+  let r=Math.random()*total;
+  for(let i=0;i<pool.length;i++){r-=weights[i];if(r<=0)return pool[i];}
+  return pool[pool.length-1];
+}
+
+// ── DECK HELPERS ──────────────────────────────
+function getDeck(deckId){
+  for(const g of ALL_GROUPS) for(const d of g.decks) if(d.id===deckId)return d;
+  return null;
+}
+function deckProgress(deck){
+  const words=unlockedWords(deck);
+  const mastered=words.filter((_,i)=>getWS(deck.id,i).streak>=5).length;
+  return{mastered,total:words.length,all:deck.words.length};
+}
+
+// ── LOGIN STREAK ──────────────────────────────
+function recordLogin(){
+  const today=new Date().toISOString().slice(0,10);
+  if(S.lastLoginDate===today)return;
+  S.loginDates.push(today);
+  S.lastLoginDate=today;
+  // check consecutive days
+  const dates=S.loginDates.slice().sort();
+  let streak=1,maxStreak=1;
+  for(let i=1;i<dates.length;i++){
+    const diff=(new Date(dates[i])-new Date(dates[i-1]))/(1000*60*60*24);
+    if(diff===1){streak++;maxStreak=Math.max(maxStreak,streak);}
+    else if(diff>1)streak=1;
+  }
+  if(maxStreak>=3)checkBadge("streak_3");
+  if(maxStreak>=7)checkBadge("streak_7");
+  if(maxStreak>=30)checkBadge("streak_30");
+  addExp(15);
+  saveState();
+}
+
+// ── BADGES ────────────────────────────────────
+function checkBadge(id){
+  if(S.badges.includes(id))return;
+  let earned=false;
+  if(id==="first_correct")earned=S.totalCorrect>=1;
+  if(id==="on_fire")earned=sessionCorrect>=10;
+  if(id==="sharp")earned=sessionConsecutive>=20;
+  if(id==="century")earned=S.totalCorrect>=100;
+  if(id==="mastery_10")earned=countMastered()>=10;
+  if(id==="mastery_50")earned=countMastered()>=50;
+  if(id==="speed_demon")earned=true;
+  if(id==="polyglot")earned=ALL_GROUPS.some(g=>g.decks.some(d=>getUnlocked(d.id)>=d.words.length));
+  if(id==="graduate")earned=ALL_GROUPS.some(g=>g.decks.some(d=>{
+    const u=getUnlocked(d.id);
+    return u>0&&d.words.slice(0,u).every((_,i)=>getWS(d.id,i).streak>=5);
+  }));
+  if(earned){S.badges.push(id);addExp(100);saveState();}
+}
+function checkAllBadges(){
+  ["first_correct","on_fire","sharp","century","mastery_10","mastery_50","polyglot","graduate"].forEach(checkBadge);
+}
+function countMastered(){
+  let n=0;
+  ALL_GROUPS.forEach(g=>g.decks.forEach(d=>d.words.forEach((_,i)=>{if(getWS(d.id,i).streak>=5)n++;})));
+  return n;
+}
+
+// ── RENDER GROUPS ─────────────────────────────
+function toggleGroup(id){openGroups.has(id)?openGroups.delete(id):openGroups.add(id);renderGroups();}
+function toggleDeck(id){selectedIds.has(id)?selectedIds.delete(id):selectedIds.add(id);renderGroups();renderStartBar();}
+function renderGroups(){
+  document.getElementById("groups-container").innerHTML=ALL_GROUPS.map(group=>{
+    const isOpen=openGroups.has(group.id);
+    const totalWords=group.decks.reduce((s,d)=>s+d.words.length,0);
+    const totalMastered=group.decks.reduce((s,d)=>s+deckProgress(d).mastered,0);
+    const decksHtml=group.decks.map(deck=>{
+      const {mastered,total,all}=deckProgress(deck);
+      const pct=total>0?Math.round((mastered/total)*100):0;
+      const sel=selectedIds.has(deck.id);
+      const unlocked=getUnlocked(deck.id);
       return `<div class="folder-card ${sel?"selected":""}" onclick="toggleDeck('${deck.id}')">
         <div class="folder-check">✓</div>
         <div class="folder-icon">${deck.icon}</div>
         <div class="folder-name">${deck.name}</div>
-        <div class="folder-meta">${total} words · ${mastered} mastered</div>
+        <div class="folder-meta">${mastered}/${total} mastered</div>
+        <div class="folder-unlock">${unlocked}/${all} unlocked</div>
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
       </div>`;
     }).join("");
@@ -242,161 +440,454 @@ function renderGroups() {
   }).join("");
 }
 
-function renderStartBar() {
-  const bar = document.getElementById("start-bar");
-  if (selectedIds.size === 0) { bar.style.display = "none"; return; }
-  const totalWords = [...selectedIds].reduce((s,id) => { const d=getDeck(id); return s+(d?d.words.length:0); }, 0);
-  const names = [...selectedIds].map(id => getDeck(id)?.name).filter(Boolean).join(", ");
-  bar.style.display = "flex";
-  bar.innerHTML = `
-    <div class="start-bar-left">
-      <strong>${selectedIds.size}</strong> deck${selectedIds.size!==1?"s":""} · <strong>${totalWords}</strong> words<br>
-      <span style="font-size:11px;color:#aaa">${names}</span>
+// ── START BAR ─────────────────────────────────
+function renderStartBar(){
+  const bar=document.getElementById("start-bar");
+  if(selectedIds.size===0){bar.style.display="none";return;}
+  const totalWords=[...selectedIds].reduce((s,id)=>{const d=getDeck(id);return s+(d?getUnlocked(id):0);},0);
+  const names=[...selectedIds].map(id=>getDeck(id)?.name).filter(Boolean).join(", ");
+  bar.style.display="block";
+  bar.innerHTML=`
+    <div class="start-bar-top">
+      <div class="start-bar-left"><strong>${selectedIds.size}</strong> deck${selectedIds.size!==1?"s":""} · <strong>${totalWords}</strong> words unlocked<br>
+      <span style="font-size:11px;color:#aaa">${names}</span></div>
     </div>
-    <div class="start-bar-right">
-      <div class="mode-toggle">
-        <button class="mode-btn ${!hardestFirst?"active":""}" onclick="setMode(false)">Random</button>
-        <button class="mode-btn ${hardestFirst?"active":""}" onclick="setMode(true)">Hardest first</button>
-      </div>
-      <button class="start-btn" onclick="startDrill()">Start ▶</button>
-    </div>`;
+    <div class="mode-row">
+      ${["classic","focus","learn","timer"].map(m=>`<button class="mode-pill ${activeMode===m?"active":""}" onclick="setMode('${m}')">${{classic:"📖 Classic",focus:"🎯 Focus",learn:"👁 Learn",timer:"⏱ Timer"}[m]}</button>`).join("")}
+    </div>
+    <button class="start-btn" onclick="startSession()">Start ▶</button>`;
 }
-function setMode(val) { hardestFirst = val; renderStartBar(); }
+function setMode(m){activeMode=m;renderStartBar();}
 
-function startDrill() {
-  activeWords = [];
-  selectedIds.forEach(id => {
-    const deck = getDeck(id);
-    if (!deck) return;
-    deck.words.forEach((w,i) => activeWords.push({...w, deckId:id, deckName:deck.name, idx:i}));
+// ── BUILD ACTIVE WORDS ────────────────────────
+function buildActiveWords(){
+  activeWords=[];
+  selectedIds.forEach(id=>{
+    const deck=getDeck(id);
+    if(!deck)return;
+    unlockedWords(deck).forEach((w,i)=>activeWords.push({...w,deckId:id,deckName:deck.name,idx:i}));
   });
-  showStats = false;
-  document.getElementById("stats-view").style.display = "none";
-  document.getElementById("stats-btn").textContent = "Stats";
-  nextWord();
 }
-function nextWord() {
-  answered = false;
-  currentWord = pickNext();
+
+// ── START SESSION ─────────────────────────────
+function startSession(){
+  buildActiveWords();
+  if(!activeWords.length)return;
+  sessionCorrect=0; sessionConsecutive=0;
+  if(activeMode==="learn")startLearn();
+  else if(activeMode==="timer")startTimer();
+  else startDrill();
+}
+
+// ── SHOW SCREEN ───────────────────────────────
+function showScreen(name){
+  const ms=document.getElementById("main-screen");
+  ms.style.display="block";
+  document.getElementById("groups-container").style.display="none";
+  document.getElementById("start-bar").style.display="none";
+  document.getElementById("exp-bar").style.display="none";
+  if(name==="stats")renderStatsScreen();
+  else if(name==="badges")renderBadgesScreen();
+}
+function backToMenu(){
+  clearInterval(timerInterval);
+  document.getElementById("main-screen").style.display="none";
+  document.getElementById("groups-container").style.display="block";
+  document.getElementById("exp-bar").style.display="block";
+  renderStartBar();
+  renderGroups();
+  renderExpBar();
+}
+
+// ── CLASSIC & FOCUS DRILL ─────────────────────
+function startDrill(){
+  answered=false;
+  currentWord=pickNext(activeMode==="focus");
+  renderDrill();
+  document.getElementById("main-screen").style.display="block";
+  document.getElementById("groups-container").style.display="none";
+  document.getElementById("start-bar").style.display="none";
+  document.getElementById("exp-bar").style.display="none";
+}
+function nextDrillWord(){
+  answered=false;
+  currentWord=pickNext(activeMode==="focus");
   renderDrill();
 }
-function miniStats(ws) {
-  return `
-    <div class="mini-stat"><div class="mini-label">correct</div><div class="mini-val">${ws.correct}</div></div>
+function miniStats(ws){
+  return `<div class="mini-stat"><div class="mini-label">correct</div><div class="mini-val">${ws.correct}</div></div>
     <div class="mini-stat"><div class="mini-label">wrong</div><div class="mini-val">${ws.wrong}</div></div>
     <div class="mini-stat"><div class="mini-label">streak</div><div class="mini-val">${ws.streak}</div></div>
     <div class="mini-stat"><div class="mini-label">mastered</div><div class="mini-val">${ws.streak>=5?"✓":"—"}</div></div>`;
 }
-function renderDrill() {
-  const el = document.getElementById("drill-area");
-  el.style.display = "block";
-  if (!currentWord) return;
-  const ws = getWS(currentWord.deckId, currentWord.idx);
-  const badges = [
-    ws.streak>=5 ? `<span class="mastered-badge">✓ mastered</span>` : "",
-    ws.streak>0&&ws.streak<5 ? `<span class="streak-badge">🔥 ${ws.streak} streak</span>` : ""
+function renderDrill(){
+  const el=document.getElementById("main-screen");
+  if(!currentWord)return;
+  const ws=getWS(currentWord.deckId,currentWord.idx);
+  const badges=[
+    ws.streak>=5?`<span class="mastered-badge">✓ mastered</span>`:"",
+    ws.streak>0&&ws.streak<5?`<span class="streak-badge">🔥 ${ws.streak}</span>`:""
   ].join(" ");
-  const deckNames = [...selectedIds].map(id=>getDeck(id)?.name).filter(Boolean).join(" + ");
-  el.innerHTML = `
-    <div class="drill-top">
-      <div class="deck-label">${deckNames}</div>
-      <div class="drill-counters">correct <span>${ws.correct}</span> &nbsp; wrong <span>${ws.wrong}</span></div>
-    </div>
-    <div class="word-display">
-      <div class="english-word">${currentWord.en}</div>
-      <div class="word-hint">${currentWord.hint} ${badges}</div>
-    </div>
-    <input type="text" class="german-input" id="german-input" placeholder="type in German…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="handleKey(event)" />
-    <div class="action-row">
-      <button class="check-btn" onclick="checkAnswer()">Check</button>
-      <button class="dontknow-btn" onclick="dontKnow()">? Don't know</button>
-    </div>
-    <div class="feedback" id="feedback"></div>
-    <div class="stats-row" id="stats-row">${miniStats(ws)}</div>`;
-  setTimeout(() => { const i = document.getElementById("german-input"); if(i) i.focus(); }, 50);
+  const deckNames=[...selectedIds].map(id=>getDeck(id)?.name).filter(Boolean).join(" + ");
+  const focusNotice=activeMode==="focus"?`<div class="focus-notice">🎯 Focus mode — mastered words excluded</div>`:"";
+  el.innerHTML=`
+    <div class="screen">
+      <div class="screen-top">
+        <div class="screen-label">${deckNames}</div>
+        <button class="back-btn" onclick="backToMenu()">← Menu</button>
+      </div>
+      ${focusNotice}
+      <div id="unlock-row-drill"></div>
+      <div class="word-display">
+        <div class="english-word">${currentWord.en}</div>
+        <div class="word-hint">${currentWord.hint} ${badges}</div>
+      </div>
+      <input type="text" class="german-input" id="german-input" placeholder="type in German…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="handleDrillKey(event)"/>
+      <div class="action-row">
+        <button class="check-btn" onclick="checkDrill()">Check</button>
+        <button class="dontknow-btn" onclick="dontKnow()">? Don't know</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <div id="examples-area"></div>
+      <div class="stats-row" id="stats-row">${miniStats(ws)}</div>
+    </div>`;
+  renderUnlockRow("unlock-row-drill");
+  focusInput();
 }
-function showFeedback(correct, ws) {
-  const pluralHtml = currentWord.pl ? `<div class="plural-text">plural: ${currentWord.pl}</div>` : "";
-  const cls = correct ? "correct" : "wrong";
-  const icon = correct ? "✓" : "✗";
-  document.getElementById("feedback").innerHTML = `
+function renderUnlockRow(containerId){
+  const container=document.getElementById(containerId);
+  if(!container)return;
+  const rows=[];
+  selectedIds.forEach(id=>{
+    const deck=getDeck(id);
+    if(!deck)return;
+    const u=getUnlocked(id);
+    if(u<deck.words.length)rows.push(`<div class="unlock-row">
+      <div class="unlock-info">${deck.name}: ${u}/${deck.words.length} unlocked</div>
+      <button class="unlock-btn" onclick="unlockMore('${id}')">+${Math.min(UNLOCK_STEP,deck.words.length-u)} more</button>
+    </div>`);
+  });
+  container.innerHTML=rows.join("");
+}
+function focusInput(){
+  setTimeout(()=>{
+    const i=document.getElementById("german-input");
+    if(i){i.focus();try{i.setSelectionRange(0,0);}catch(e){}}
+  },50);
+}
+function handleDrillKey(e){if(e.key==="Enter"){if(answered)nextDrillWord();else checkDrill();}}
+function checkDrill(){
+  if(answered)return;
+  const input=document.getElementById("german-input");
+  if(!input||!currentWord)return;
+  if(!input.value.trim()){dontKnow();return;}
+  answered=true;
+  const correct=isCorrect(input.value,currentWord.de);
+  const ws=getWS(currentWord.deckId,currentWord.idx);
+  const isNew=ws.correct===0&&ws.wrong===0;
+  if(correct){
+    ws.correct++;ws.streak++;
+    sessionCorrect++;sessionConsecutive++;
+    S.totalCorrect++;
+    addExp(isNew?20:5);
+    if(ws.streak===5)addExp(50);
+    input.classList.add("correct");
+    checkAllBadges();
+  } else {
+    ws.wrong++;ws.streak=0;sessionConsecutive=0;
+    input.classList.add("wrong");
+  }
+  saveState();
+  showDrillFeedback(correct,ws);
+  // keep keyboard open on mobile by NOT blurring
+}
+function dontKnow(){
+  if(answered)return;
+  answered=true;
+  const ws=getWS(currentWord.deckId,currentWord.idx);
+  ws.wrong++;ws.streak=0;sessionConsecutive=0;
+  const input=document.getElementById("german-input");
+  if(input){input.value=currentWord.de;input.classList.add("wrong");}
+  saveState();
+  showDrillFeedback(false,ws);
+}
+function showDrillFeedback(correct,ws){
+  const cls=correct?"correct":"wrong";
+  const icon=correct?"✓":"✗";
+  document.getElementById("feedback").innerHTML=`
     <div class="feedback-left">
       <div class="feedback-text ${cls}">${icon} ${correct?"Correct!":"Answer:"} <strong>${currentWord.de}</strong></div>
-      ${pluralHtml}
+      ${currentWord.pl?`<div class="plural-text">plural: ${currentWord.pl}</div>`:""}
     </div>
     <div class="feedback-right">
       <button class="audio-btn" onclick="speak('${currentWord.de.replace(/'/g,"\\'")}')">🔊</button>
-      <button class="next-btn" onclick="nextWord()">Next →</button>
+      <button class="next-btn" onclick="nextDrillWord()">Next →</button>
     </div>`;
   speak(currentWord.de);
-  document.getElementById("stats-row").innerHTML = miniStats(ws);
-}
-function handleKey(e) {
-  if (e.key==="Enter") { if (answered) nextWord(); else checkAnswer(); }
-}
-function checkAnswer() {
-  if (answered) return;
-  const input = document.getElementById("german-input");
-  if (!input||!currentWord) return;
-  if (!input.value.trim()) { dontKnow(); return; }
-  answered = true;
-  const correct = isCorrect(input.value, currentWord.de);
-  const ws = getWS(currentWord.deckId, currentWord.idx);
-  if (correct) { ws.correct++; ws.streak++; input.classList.add("correct"); }
-  else { ws.wrong++; ws.streak=0; input.classList.add("wrong"); }
-  saveState();
-  showFeedback(correct, ws);
-}
-function dontKnow() {
-  if (answered) return;
-  answered = true;
-  const ws = getWS(currentWord.deckId, currentWord.idx);
-  ws.wrong++; ws.streak=0;
-  const input = document.getElementById("german-input");
-  if (input) { input.value=currentWord.de; input.classList.add("wrong"); }
-  saveState();
-  showFeedback(false, ws);
-}
-
-function toggleStats() {
-  showStats = !showStats;
-  const sv = document.getElementById("stats-view");
-  const da = document.getElementById("drill-area");
-  const btn = document.getElementById("stats-btn");
-  if (showStats) {
-    sv.style.display="block"; da.style.display="none";
-    btn.textContent="← Back";
-    renderStatsView();
-  } else {
-    sv.style.display="none";
-    if (activeWords.length) da.style.display="block";
-    btn.textContent="Stats";
+  if(currentWord.examples&&currentWord.examples.length){
+    document.getElementById("examples-area").innerHTML=`
+      <div class="examples-wrap">
+        <div class="examples-title">Examples</div>
+        ${currentWord.examples.map(ex=>`
+          <div class="example-row">
+            <div class="example-de">${ex.de}</div>
+            <div class="example-en">${ex.en}</div>
+          </div>`).join("")}
+      </div>`;
   }
-}
-function renderStatsView() {
-  let html = `<div class="stats-title">Progress across all decks</div>`;
-  ALL_GROUPS.forEach(group => {
-    html += `<div class="stats-section"><div class="stats-section-title">${group.icon} ${group.name}</div>`;
-    group.decks.forEach(deck => {
-      const {mastered,total} = deckProgress(deck);
-      html += `<div style="margin-bottom:1rem">
-        <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:6px">${deck.icon} ${deck.name} — ${mastered}/${total} mastered</div>
-        <table><thead><tr><th>English</th><th>German</th><th>Plural</th><th>✓</th><th>✗</th><th>Streak</th></tr></thead><tbody>`;
-      deck.words.forEach((w,i) => {
-        const ws = getWS(deck.id,i);
-        const st = ws.streak>=5 ? `<span class="mastered-badge">mastered</span>`
-          : ws.streak>0 ? `<span class="streak-badge">${ws.streak}</span>`
-          : `<span style="color:#bbb">new</span>`;
-        html += `<tr><td>${w.en}</td><td style="color:#555">${w.de}</td><td style="color:#aaa">${w.pl||"—"}</td><td>${ws.correct}</td><td>${ws.wrong}</td><td>${st}</td></tr>`;
-      });
-      html += `</tbody></table></div>`;
-    });
-    html += `</div>`;
-  });
-  document.getElementById("stats-view").innerHTML = html;
+  document.getElementById("stats-row").innerHTML=miniStats(ws);
+  // refocus input to keep keyboard open
+  focusInput();
 }
 
+// ── LEARN MODE ────────────────────────────────
+function startLearn(){
+  learnQueue=[...activeWords];
+  learnIndex=0;
+  document.getElementById("main-screen").style.display="block";
+  document.getElementById("groups-container").style.display="none";
+  document.getElementById("start-bar").style.display="none";
+  document.getElementById("exp-bar").style.display="none";
+  renderLearnCard();
+}
+function renderLearnCard(){
+  const el=document.getElementById("main-screen");
+  if(learnIndex>=learnQueue.length){
+    // done
+    el.innerHTML=`<div class="screen">
+      <div class="screen-top"><div class="screen-label">Learning complete</div><button class="back-btn" onclick="backToMenu()">← Menu</button></div>
+      <div class="result-screen">
+        <div class="result-emoji">🎉</div>
+        <div class="result-title">All cards seen!</div>
+        <div class="result-sub">Now drill them to lock them in.</div>
+        <button class="result-btn" onclick="finishLearnStartDrill()">Start drilling →</button>
+      </div></div>`;
+    return;
+  }
+  const w=learnQueue[learnIndex];
+  const total=activeWords.length;
+  const seen=Math.min(learnIndex,total);
+  el.innerHTML=`<div class="screen">
+    <div class="screen-top">
+      <div class="screen-label">Learn · ${seen+1}/${total}</div>
+      <button class="back-btn" onclick="backToMenu()">← Menu</button>
+    </div>
+    <div class="learn-progress">${learnQueue.length-learnIndex} cards left in queue</div>
+    <div class="learn-card">
+      <div class="learn-en">${w.en}</div>
+      <div class="learn-de">${w.de}</div>
+      ${w.pl?`<div class="learn-hint">plural: ${w.pl}</div>`:""}
+      <div class="learn-hint">${w.hint}</div>
+      ${w.examples&&w.examples.length?`<div class="examples-wrap" style="text-align:left;margin-top:12px">
+        <div class="examples-title">Examples</div>
+        ${w.examples.map(ex=>`<div class="example-row"><div class="example-de">${ex.de}</div><div class="example-en">${ex.en}</div></div>`).join("")}
+      </div>`:""}
+    </div>
+    <button class="audio-btn" style="display:block;margin:0 auto 1rem;" onclick="speak('${w.de.replace(/'/g,"\\'")}')">🔊 Listen</button>
+    <div class="learn-actions">
+      <button class="learn-btn not-yet" onclick="learnNotYet()">Not yet</button>
+      <button class="learn-btn got-it" onclick="learnGotIt()">Got it ✓</button>
+    </div>
+  </div>`;
+}
+function learnGotIt(){learnIndex++;addExp(5);saveState();renderLearnCard();}
+function learnNotYet(){
+  const w=learnQueue[learnIndex];
+  learnQueue.splice(learnIndex,1);
+  learnQueue.push(w);
+  renderLearnCard();
+}
+function finishLearnStartDrill(){
+  activeMode="classic";
+  startDrill();
+}
+
+// ── TIMER MODE ────────────────────────────────
+function startTimer(){
+  const words=[...activeWords];
+  // if fewer than 10 words, cycle randomly to fill at least 10
+  timerQueue=[];
+  if(words.length>=10){
+    timerQueue=[...words].sort(()=>Math.random()-0.5);
+  } else {
+    while(timerQueue.length<10){
+      const shuffled=[...words].sort(()=>Math.random()-0.5);
+      timerQueue.push(...shuffled);
+    }
+  }
+  timerTotal=Math.round(4.1*timerQueue.length);
+  timerLeft=timerTotal;
+  timerCorrect=0;timerWrong=0;timerWordsDone=0;timerFinished=false;
+  document.getElementById("main-screen").style.display="block";
+  document.getElementById("groups-container").style.display="none";
+  document.getElementById("start-bar").style.display="none";
+  document.getElementById("exp-bar").style.display="none";
+  currentWord=timerQueue[timerWordsDone];
+  renderTimerScreen();
+  timerInterval=setInterval(timerTick,100);
+}
+function timerTick(){
+  timerLeft=Math.max(0,timerLeft-0.1);
+  updateTimerDisplay();
+  if(timerLeft<=0&&!timerFinished)endTimer(false);
+}
+function updateTimerDisplay(){
+  const clockEl=document.getElementById("timer-clock");
+  const barEl=document.getElementById("timer-bar-fill");
+  if(!clockEl||!barEl)return;
+  const urgent=timerLeft<10;
+  clockEl.textContent=timerLeft.toFixed(1)+"s";
+  clockEl.className="timer-clock"+(urgent?" urgent":"");
+  barEl.style.width=(timerLeft/timerTotal*100)+"%";
+  barEl.className="timer-bar-fill"+(urgent?" urgent":"");
+}
+function renderTimerScreen(){
+  const el=document.getElementById("main-screen");
+  if(!currentWord)return;
+  el.innerHTML=`<div class="screen">
+    <div class="screen-top">
+      <div class="screen-label">Timer · ${timerQueue.length} words</div>
+      <button class="back-btn" onclick="backToMenu()">✕ Quit</button>
+    </div>
+    <div class="timer-display">
+      <div class="timer-clock" id="timer-clock">${timerLeft.toFixed(1)}s</div>
+    </div>
+    <div class="timer-bar-wrap"><div class="timer-bar-fill" id="timer-bar-fill" style="width:100%"></div></div>
+    <div class="timer-score">✓ <strong id="t-correct">${timerCorrect}</strong> &nbsp; ✗ <strong id="t-wrong">${timerWrong}</strong> &nbsp; left: <strong>${timerQueue.length-timerWordsDone}</strong></div>
+    <div class="word-display">
+      <div class="english-word">${currentWord.en}</div>
+      <div class="word-hint">${currentWord.hint}</div>
+    </div>
+    <input type="text" class="german-input" id="timer-input" placeholder="type in German…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="handleTimerKey(event)"/>
+    <div class="action-row">
+      <button class="check-btn" onclick="checkTimer()">Check</button>
+      <button class="dontknow-btn" onclick="skipTimer()">Skip</button>
+    </div>
+    <div id="timer-feedback" style="min-height:32px;font-size:14px;text-align:center;padding-top:4px;"></div>
+  </div>`;
+  focusInput();
+}
+function handleTimerKey(e){if(e.key==="Enter")checkTimer();}
+function checkTimer(){
+  if(timerFinished)return;
+  const input=document.getElementById("timer-input");
+  if(!input)return;
+  const val=input.value;
+  if(!val.trim()){skipTimer();return;}
+  const correct=isCorrect(val,currentWord.de);
+  const fb=document.getElementById("timer-feedback");
+  if(correct){
+    timerCorrect++;
+    addExp(10);
+    if(fb)fb.innerHTML=`<span style="color:#0F6E56;font-weight:600;">✓ ${currentWord.de}</span>`;
+  } else {
+    timerWrong++;
+    // add word back at random position in remaining queue
+    const remaining=timerQueue.length-timerWordsDone-1;
+    if(remaining>0){
+      const insertAt=timerWordsDone+1+Math.floor(Math.random()*remaining);
+      timerQueue.splice(insertAt,0,{...currentWord});
+    } else {
+      timerQueue.push({...currentWord});
+    }
+    if(fb)fb.innerHTML=`<span style="color:#993C1D;font-weight:600;">✗ ${currentWord.de}</span>`;
+  }
+  timerWordsDone++;
+  S.totalCorrect+=correct?1:0;
+  saveState();
+  if(timerWordsDone>=timerQueue.length&&correct){endTimer(true);return;}
+  currentWord=timerQueue[timerWordsDone];
+  if(input){input.value="";input.className="german-input";}
+  document.getElementById("t-correct").textContent=timerCorrect;
+  document.getElementById("t-wrong").textContent=timerWrong;
+  updateTimerDisplay();
+  focusInput();
+}
+function skipTimer(){
+  if(timerFinished)return;
+  timerWrong++;
+  const remaining=timerQueue.length-timerWordsDone-1;
+  if(remaining>0){
+    const insertAt=timerWordsDone+1+Math.floor(Math.random()*remaining);
+    timerQueue.splice(insertAt,0,{...currentWord});
+  } else {
+    timerQueue.push({...currentWord});
+  }
+  timerWordsDone++;
+  currentWord=timerQueue[timerWordsDone];
+  const input=document.getElementById("timer-input");
+  if(input){input.value="";}
+  updateTimerDisplay();
+  focusInput();
+  renderTimerScreen();
+}
+function endTimer(won){
+  timerFinished=true;
+  clearInterval(timerInterval);
+  checkBadge("speed_demon");
+  if(won)addExp(50);
+  const el=document.getElementById("main-screen");
+  el.innerHTML=`<div class="screen">
+    <div class="result-screen">
+      <div class="result-emoji">${won?"🏆":"⏰"}</div>
+      <div class="result-title">${won?"You won!":"Time's up!"}</div>
+      <div class="result-sub">${won?"You answered all words before time ran out!":"Better luck next time."}</div>
+      <div>
+        <div class="result-stat"><strong>${timerCorrect}</strong>correct</div>
+        <div class="result-stat"><strong>${timerWrong}</strong>wrong</div>
+        <div class="result-stat"><strong>${addExp(0),S.exp} XP</strong>total</div>
+      </div>
+      <button class="result-btn" onclick="backToMenu()">← Back to menu</button>
+    </div></div>`;
+}
+
+// ── STATS SCREEN ──────────────────────────────
+function renderStatsScreen(){
+  let html=`<div class="screen">
+    <div class="screen-top"><div class="screen-label">Progress</div><button class="back-btn" onclick="backToMenu()">← Back</button></div>`;
+  ALL_GROUPS.forEach(group=>{
+    html+=`<div class="stats-section"><div class="stats-section-title">${group.icon} ${group.name}</div>`;
+    group.decks.forEach(deck=>{
+      const{mastered,total,all}=deckProgress(deck);
+      html+=`<div style="margin-bottom:1rem">
+        <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:6px">${deck.icon} ${deck.name} — ${mastered}/${total} mastered (${all} total)</div>
+        <table><thead><tr><th>English</th><th>German</th><th>Plural</th><th>✓</th><th>✗</th><th>Streak</th></tr></thead><tbody>`;
+      unlockedWords(deck).forEach((w,i)=>{
+        const ws=getWS(deck.id,i);
+        const st=ws.streak>=5?`<span class="mastered-badge">mastered</span>`:ws.streak>0?`<span class="streak-badge">${ws.streak}</span>`:`<span style="color:#bbb">new</span>`;
+        html+=`<tr><td>${w.en}</td><td style="color:#555">${w.de}</td><td style="color:#aaa">${w.pl||"—"}</td><td>${ws.correct}</td><td>${ws.wrong}</td><td>${st}</td></tr>`;
+      });
+      html+=`</tbody></table></div>`;
+    });
+    html+=`</div>`;
+  });
+  html+=`</div>`;
+  document.getElementById("main-screen").innerHTML=html;
+}
+
+// ── BADGES SCREEN ─────────────────────────────
+function renderBadgesScreen(){
+  const html=`<div class="screen">
+    <div class="screen-top"><div class="screen-label">Badges</div><button class="back-btn" onclick="backToMenu()">← Back</button></div>
+    <div class="badges-grid">
+      ${BADGE_DEFS.map(b=>{
+        const earned=S.badges.includes(b.id);
+        return`<div class="badge-card ${earned?"earned":"locked"}">
+          <div class="badge-icon">${b.icon}</div>
+          <div class="badge-name">${b.name}</div>
+          <div class="badge-desc">${b.desc}</div>
+        </div>`;
+      }).join("")}
+    </div>
+  </div>`;
+  document.getElementById("main-screen").innerHTML=html;
+}
+
+// ── INIT ──────────────────────────────────────
+migrate();
 initVoice();
+recordLogin();
+renderExpBar();
 renderGroups();
 </script>
 </body>
