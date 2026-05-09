@@ -229,6 +229,7 @@ let sessionConsecutive = 0;
 // Timer state
 let timerTotal = 0, timerLeft = 0, timerInterval = null;
 let timerQueue = [], timerCorrect = 0, timerWrong = 0, timerWordsDone = 0, timerFinished = false, timerPaused = false;
+let timerWordCount = 10;
 
 // Learn state
 let learnQueue = [], learnIndex = 0;
@@ -390,6 +391,19 @@ function deckProgress(deck){
   const mastered=words.filter((_,i)=>getWS(deck.id,i).streak>=5).length;
   return{mastered,total:words.length,all:deck.words.length};
 }
+function resetDeck(deckId) {
+  if(!confirm(`Reset all progress for this deck?`))return;
+  const deck=getDeck(deckId);
+  if(!deck)return;
+  deck.words.forEach((_,i)=>{
+    const key=deckId+"_"+i;
+    delete S.words[key];
+  });
+  S.unlocked[deckId]=Math.min(UNLOCK_STEP, deck.words.length);
+  saveState();
+  renderStatsScreen();
+  renderGroups();
+}
 
 // ── LOGIN STREAK ──────────────────────────────
 function recordLogin(){
@@ -488,9 +502,14 @@ function renderStartBar(){
     <div class="mode-row">
       ${["classic","focus","learn","timer"].map(m=>`<button class="mode-pill ${activeMode===m?"active":""}" onclick="setMode('${m}')">${{classic:"📖 Classic",focus:"🎯 Focus",learn:"👁 Learn",timer:"⏱ Timer"}[m]}</button>`).join("")}
     </div>
+    ${activeMode==="timer"?`<div class="mode-row" style="margin-top:6px;">
+      <span style="font-size:12px;color:#888;align-self:center;">Words:</span>
+      ${[10,25,50].map(n=>`<button class="mode-pill ${timerWordCount===n?"active":""}" onclick="setTimerCount(${n})">${n}</button>`).join("")}
+    </div>`:""}
     <button class="start-btn" onclick="startSession()">Start ▶</button>`;
 }
 function setMode(m){activeMode=m;renderStartBar();}
+function setTimerCount(n){ timerWordCount=n; renderStartBar(); }
 
 // ── BUILD ACTIVE WORDS ────────────────────────
 function buildActiveWords(){
@@ -731,7 +750,7 @@ function renderLearnCard(){
       </div>`:""}
     </div>
     <button class="audio-btn" style="display:block;margin:0 auto 1rem;" onclick="speak('${w.de.replace(/'/g,"\\'")}')">🔊 Listen</button>
-    <div class="learn-actions">
+    <div class="learn-actions" onkeydown="if(event.key==='Enter')learnGotIt()">
       <button class="learn-btn not-yet" onclick="learnNotYet()">Not yet</button>
       <button class="learn-btn got-it" onclick="learnGotIt()">Got it ✓</button>
     </div>
@@ -742,7 +761,29 @@ function learnNotYet(){
   const w=learnQueue[learnIndex];
   learnQueue.splice(learnIndex,1);
   learnQueue.push(w);
-  renderLearnCard();
+  // show answer for 3 seconds before moving on
+  const el=document.getElementById("main-screen");
+  const notYetBtn=el.querySelector(".learn-btn.not-yet");
+  const gotItBtn=el.querySelector(".learn-btn.got-it");
+  if(notYetBtn)notYetBtn.disabled=true;
+  if(gotItBtn)gotItBtn.disabled=true;
+  // flash the german word red
+  const deEl=el.querySelector(".learn-de");
+  if(deEl){
+    deEl.style.color="#993C1D";
+    deEl.style.fontSize="2.2rem";
+  }
+  // show answer banner
+  let banner=document.getElementById("learn-wrong-banner");
+  if(!banner){
+    banner=document.createElement("div");
+    banner.id="learn-wrong-banner";
+    banner.style.cssText="background:#fff5f5;border:1px solid #E24B4A;border-radius:8px;padding:10px 14px;text-align:center;margin-bottom:1rem;font-size:20px;font-weight:700;color:#993C1D;";
+    const actionsEl=el.querySelector(".learn-actions");
+    if(actionsEl)actionsEl.parentNode.insertBefore(banner,actionsEl);
+  }
+  banner.textContent=`✗ ${w.de}`;
+  setTimeout(()=>{ renderLearnCard(); }, 3000);
 }
 function finishLearnStartDrill(){
   activeMode="classic";
@@ -752,16 +793,13 @@ function finishLearnStartDrill(){
 // ── TIMER MODE ────────────────────────────────
 function startTimer(){
   const words=[...activeWords];
-  // if fewer than 10 words, cycle randomly to fill at least 10
   timerQueue=[];
-  if(words.length>=10){
-    timerQueue=[...words].sort(()=>Math.random()-0.5);
-  } else {
-    while(timerQueue.length<10){
-      const shuffled=[...words].sort(()=>Math.random()-0.5);
-      timerQueue.push(...shuffled);
-    }
+  // fill queue to timerWordCount, cycling randomly if not enough words
+  while(timerQueue.length<timerWordCount){
+    const shuffled=[...words].sort(()=>Math.random()-0.5);
+    timerQueue.push(...shuffled);
   }
+  timerQueue=timerQueue.slice(0,timerWordCount);
   timerTotal=Math.round(4.5*timerQueue.length);
   timerLeft=timerTotal;
   timerCorrect=0;timerWrong=0;timerWordsDone=0;timerFinished=false;
@@ -793,7 +831,7 @@ function renderTimerScreen(){
   if(!currentWord)return;
   el.innerHTML=`<div class="screen">
     <div class="screen-top">
-      <div class="screen-label">Timer · ${timerQueue.length} words</div>
+      <div class="screen-label">⏱ Timer · ${timerWordCount} words · ${4.5*timerWordCount}s total</div>
       <button class="back-btn" onclick="backToMenu()">✕ Quit</button>
     </div>
     <div class="timer-display">
@@ -911,7 +949,10 @@ function renderStatsScreen(){
     group.decks.forEach(deck=>{
       const{mastered,total,all}=deckProgress(deck);
       html+=`<div style="margin-bottom:1rem">
-        <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:6px">${deck.icon} ${deck.name} — ${mastered}/${total} mastered (${all} total)</div>
+        <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;">
+          <span>${deck.icon} ${deck.name} — ${mastered}/${total} mastered (${all} total)</span>
+          <button onclick="resetDeck('${deck.id}')" style="font-size:11px;padding:3px 8px;border:1px solid #ddd;border-radius:6px;background:white;color:#888;cursor:pointer;">Reset</button>
+        </div>
         <table><thead><tr><th>English</th><th>German</th><th>Plural</th><th>✓</th><th>✗</th><th>Streak</th></tr></thead><tbody>`;
       unlockedWords(deck).forEach((w,i)=>{
         const ws=getWS(deck.id,i);
