@@ -115,6 +115,23 @@ h1{font-size:20px;font-weight:700;}
 .unlock-info{font-size:13px;color:#0F6E56;font-weight:500;}
 .unlock-btn{font-size:12px;padding:5px 12px;border:1.5px solid #1D9E75;border-radius:8px;background:white;color:#1D9E75;cursor:pointer;font-weight:600;}
 .unlock-btn:hover{background:#f0faf6;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;display:flex;align-items:flex-end;justify-content:center;}
+.modal-sheet{background:white;border-radius:16px 16px 0 0;padding:1.5rem;width:100%;max-width:720px;max-height:80vh;overflow-y:auto;}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:4px;}
+.modal-sub{font-size:13px;color:#888;margin-bottom:1rem;}
+.modal-word-list{display:flex;flex-direction:column;gap:6px;margin-bottom:1.25rem;}
+.modal-word{display:flex;justify-content:space-between;padding:8px 10px;background:#f9f9f9;border-radius:8px;font-size:13px;}
+.modal-word-en{color:#888;}
+.modal-word-de{font-weight:600;}
+.modal-actions{display:flex;gap:8px;}
+.modal-btn{flex:1;height:40px;font-size:14px;font-weight:600;border-radius:10px;border:none;cursor:pointer;}
+.modal-btn.primary{background:#1D9E75;color:white;}
+.modal-btn.primary:hover{background:#0F6E56;}
+.modal-btn.secondary{background:#f5f5f3;color:#555;border:1.5px solid #ddd;}
+.modal-btn.secondary:hover{background:#eee;}
+.modal-add-more{width:100%;margin-bottom:1rem;padding:8px;font-size:13px;font-weight:600;border:1.5px dashed #1D9E75;border-radius:8px;background:transparent;color:#1D9E75;cursor:pointer;}
+.modal-add-more:hover{background:#f0faf6;}
+.modal-add-more:disabled{border-color:#ccc;color:#ccc;cursor:not-allowed;}
 
 /* LEARNING MODE */
 .learn-card{text-align:center;padding:1rem 0;}
@@ -230,6 +247,7 @@ let sessionConsecutive = 0;
 let timerTotal = 0, timerLeft = 0, timerInterval = null;
 let timerQueue = [], timerCorrect = 0, timerWrong = 0, timerWordsDone = 0, timerFinished = false, timerPaused = false;
 let timerWordCount = 10, timerExpEarned = 0;
+let stagedDeckId = null, stagedCount = 0;
 
 // Learn state
 let learnQueue = [], learnIndex = 0;
@@ -331,17 +349,71 @@ function getUnlocked(deckId) {
 }
 function unlockMore(deckId) {
   event.stopPropagation();
-  const deck = getDeck(deckId);
-  if (!deck) return;
-  const current = getUnlocked(deckId);
-  S.unlocked[deckId] = Math.min(deck.words.length, current + UNLOCK_STEP);
+  stagedDeckId=deckId;
+  stagedCount=UNLOCK_STEP;
+  showUnlockModal();
+}
+function showUnlockModal(){
+  const deck=getDeck(stagedDeckId);
+  if(!deck)return;
+  const currentlyUnlocked=getUnlocked(stagedDeckId);
+  const toAdd=Math.min(stagedCount, deck.words.length-currentlyUnlocked);
+  const stagedWords=deck.words.slice(currentlyUnlocked, currentlyUnlocked+toAdd);
+  const canAddMore=(currentlyUnlocked+toAdd)<deck.words.length;
+  const remaining=deck.words.length-(currentlyUnlocked+toAdd);
+  // remove existing modal if any
+  const existing=document.getElementById("unlock-modal");
+  if(existing)existing.remove();
+  const overlay=document.createElement("div");
+  overlay.className="modal-overlay";
+  overlay.id="unlock-modal";
+  overlay.innerHTML=`
+    <div class="modal-sheet">
+      <div class="modal-title">Add new words</div>
+      <div class="modal-sub">${deck.name} · ${currentlyUnlocked} unlocked · adding ${toAdd} words</div>
+      <div class="modal-word-list">
+        ${stagedWords.map(w=>`<div class="modal-word"><span class="modal-word-en">${w.en}</span><span class="modal-word-de">${w.de}</span></div>`).join("")}
+      </div>
+      <button class="modal-add-more" id="modal-add-more-btn" onclick="stageMore()" ${!canAddMore?"disabled":""}>
+        ${canAddMore?`+ ${Math.min(UNLOCK_STEP,remaining)} more words`:`No more words to add`}
+      </button>
+      <div class="modal-actions">
+        <button class="modal-btn secondary" onclick="cancelUnlock()">Cancel</button>
+        <button class="modal-btn primary" onclick="confirmUnlock()">Add & Learn →</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+function stageMore(){
+  stagedCount+=UNLOCK_STEP;
+  showUnlockModal();
+}
+function cancelUnlock(){
+  stagedCount=0;
+  stagedDeckId=null;
+  const modal=document.getElementById("unlock-modal");
+  if(modal)modal.remove();
+}
+function confirmUnlock(){
+  const deck=getDeck(stagedDeckId);
+  if(!deck)return;
+  const currentlyUnlocked=getUnlocked(stagedDeckId);
+  const toAdd=Math.min(stagedCount, deck.words.length-currentlyUnlocked);
+  const newWords=deck.words.slice(currentlyUnlocked, currentlyUnlocked+toAdd);
+  S.unlocked[stagedDeckId]=currentlyUnlocked+toAdd;
   saveState();
   checkBadge("polyglot");
-  // rebuild active words if this deck is selected
-  if(selectedIds.has(deckId)) buildActiveWords();
-  renderGroups();
-  renderStartBar();
-  if(activeWords.length) renderUnlockRow("unlock-row-drill");
+  const modal=document.getElementById("unlock-modal");
+  if(modal)modal.remove();
+  // go to learn mode with only the new words
+  const deckId=stagedDeckId;
+  stagedCount=0; stagedDeckId=null;
+  activeWords=newWords.map((w,i)=>({...w,deckId:deckId,deckName:deck.name,idx:currentlyUnlocked+i}));
+  activeMode="learn";
+  // ensure this deck is selected for when we return
+  selectedIds.add(deckId);
+  startLearn();
+  // after learn, back button rebuilds with full deck
 }
 function unlockedWords(deck) {
   return deck.words.slice(0, getUnlocked(deck.id));
