@@ -195,6 +195,19 @@ tr:last-child td{border-bottom:none;}
 
 /* FOCUS MODE notice */
 .focus-notice{background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:8px 12px;font-size:12px;color:#856404;margin-bottom:1rem;text-align:center;}
+.voice-indicator{text-align:center;margin-bottom:1.5rem;}
+.mic-btn{width:80px;height:80px;border-radius:50%;border:none;font-size:32px;cursor:pointer;transition:all 0.2s;background:#f5f5f3;border:2px solid #ddd;}
+.mic-btn.listening{background:#fff0f0;border-color:#E24B4A;animation:pulse 1s infinite;}
+.mic-btn.processing{background:#f0faf6;border-color:#1D9E75;}
+@keyframes pulse{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(226,75,74,0.4);}70%{transform:scale(1.05);box-shadow:0 0 0 10px rgba(226,75,74,0);}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(226,75,74,0);}}
+.voice-status{font-size:13px;color:#888;margin-top:8px;}
+.voice-feedback{text-align:center;padding:16px;border-radius:10px;margin-bottom:1rem;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
+.voice-feedback.correct{background:#f0faf6;border:1px solid #1D9E75;}
+.voice-feedback.wrong{background:#fff5f5;border:1px solid #E24B4A;}
+.voice-feedback-answer{font-size:22px;font-weight:700;}
+.voice-feedback-heard{font-size:13px;color:#888;}
+.voice-feedback.correct .voice-feedback-answer{color:#0F6E56;}
+.voice-feedback.wrong .voice-feedback-answer{color:#993C1D;}
 
 @media(max-width:480px){
   .app{padding:1rem 0.75rem;}
@@ -271,6 +284,12 @@ let stagedDeckId = null, stagedCount = 0;
 
 // Learn state
 let learnQueue = [], learnIndex = 0;
+
+// Voice state
+let voiceRecognition = null;
+let voiceActive = false;
+let voiceSilenceTimer = null;
+let voiceSessionRunning = false;
 
 function loadState() {
   try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r); } catch(e) {}
@@ -350,6 +369,16 @@ function saveToCloud() {
     }).catch(e => console.error("Cloud save failed:", e));
   }, 1500); // debounce — wait 1.5s after last action before writing
 }
+
+// ── VOICE PARAMETERS (tune these) ────────────
+const VOICE_PARAMS = {
+  silenceTimeout: 5000,      // ms of no speech before auto-skip
+  correctShowTime: 1500,     // ms to show green before next word
+  wrongShowTime: 2500,       // ms to show red before next word
+  minConfidence: 0.35,       // below this confidence score = ask to repeat
+  skipPhrases: ["skip","i don't know","keine ahnung","weiter","pass"],
+  repeatPhrases: ["again","repeat","nochmal","wiederholen"],
+};
 
 // ── VOICE ─────────────────────────────────────
 function initVoice() {
@@ -668,7 +697,7 @@ function renderStartBar(){
       <span style="font-size:11px;color:#aaa">${names}</span></div>
     </div>
     <div class="mode-row">
-      ${["classic","focus","learn","timer"].map(m=>`<button class="mode-pill ${activeMode===m?"active":""}" onclick="setMode('${m}')">${{classic:"📖 Classic",focus:"🎯 Focus",learn:"👁 Learn",timer:"⏱ Timer"}[m]}</button>`).join("")}
+      ${["classic","focus","learn","timer","voice"].map(m=>`<button class="mode-pill ${activeMode===m?"active":""}" onclick="setMode('${m}')">${{classic:"📖 Classic",focus:"🎯 Focus",learn:"👁 Learn",timer:"⏱ Timer",voice:"🎙️ Voice"}[m]}</button>`).join("")}
     </div>
     ${activeMode==="timer"?`<div class="mode-row" style="margin-top:6px;">
       <span style="font-size:12px;color:#888;align-self:center;">Words:</span>
@@ -696,6 +725,7 @@ function startSession(){
   sessionCorrect=0; sessionConsecutive=0;
   if(activeMode==="learn")startLearn();
   else if(activeMode==="timer")startTimer();
+  else if(activeMode==="voice")startVoiceSession();
   else startDrill();
 }
 
@@ -711,6 +741,7 @@ function showScreen(name){
 }
 function backToMenu(){
   clearInterval(timerInterval);
+  stopVoiceSession();
   document.getElementById("main-screen").style.display="none";
   document.getElementById("groups-container").style.display="block";
   document.getElementById("exp-bar").style.display="block";
@@ -863,6 +894,256 @@ function showDrillFeedback(correct,ws){
   // keep keyboard open — do not blur, re-focus immediately
   const inp=document.getElementById("german-input");
   if(inp){inp.setAttribute("readonly","true");inp.removeAttribute("readonly");inp.focus();}
+}
+
+// ── VOICE MODE ────────────────────────────────
+function startVoiceSession() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert("Voice recognition is not supported in this browser. Switching to Classic mode.");
+    activeMode = "classic";
+    startDrill();
+    return;
+  }
+  if (!navigator.onLine) {
+    alert("No internet connection. Voice recognition requires internet. Switching to Classic mode.");
+    activeMode = "classic";
+    startDrill();
+    return;
+  }
+  voiceSessionRunning = true;
+  answered = false;
+  currentWord = pickNext(false);
+  renderVoiceDrill();
+  document.getElementById("main-screen").style.display = "block";
+  document.getElementById("groups-container").style.display = "none";
+  document.getElementById("start-bar").style.display = "none";
+  document.getElementById("exp-bar").style.display = "none";
+}
+
+function initVoiceRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) return null;
+  const recognition = new SpeechRecognition();
+  recognition.lang = "de-DE";
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 3;
+
+  // Try to prime with grammar if supported
+  try {
+    const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
+    if (SpeechGrammarList && currentWord) {
+      const grammar = `#JSGF V1.0; grammar answer; public <answer> = ${currentWord.de};`;
+      const list = new SpeechGrammarList();
+      list.addFromString(grammar, 1);
+      recognition.grammars = list;
+    }
+  } catch(e) {}
+
+  recognition.onresult = (event) => {
+    clearTimeout(voiceSilenceTimer);
+    const results = Array.from(event.results[0]);
+    const best = results[0];
+    const transcript = best.transcript.trim().toLowerCase();
+    const confidence = best.confidence;
+
+    // Check skip phrases
+    if (VOICE_PARAMS.skipPhrases.some(p => transcript.includes(p))) {
+      handleVoiceResult(false, transcript, true);
+      return;
+    }
+    // Check repeat phrases
+    if (VOICE_PARAMS.repeatPhrases.some(p => transcript.includes(p))) {
+      speak(currentWord.de);
+      startListening();
+      return;
+    }
+    // Low confidence — ask to repeat
+    if (confidence < VOICE_PARAMS.minConfidence && confidence > 0) {
+      setVoiceStatus("Didn't catch that — try again");
+      startListening();
+      return;
+    }
+    // Check all alternatives for a match
+    const anyMatch = results.some(r => {
+      const t = r.transcript.trim().toLowerCase();
+      return voiceIsCorrect(t, currentWord.de);
+    });
+    handleVoiceResult(anyMatch, best.transcript.trim());
+  };
+
+  recognition.onerror = (event) => {
+    clearTimeout(voiceSilenceTimer);
+    if (event.error === "no-speech") {
+      // silence timeout — count as skip
+      handleVoiceResult(false, "", true);
+    } else if (event.error === "network") {
+      stopVoiceSession();
+      alert("Network error. Switching to Classic mode.");
+      activeMode = "classic";
+      startDrill();
+    } else {
+      setVoiceStatus("Error: " + event.error + " — tap mic to retry");
+      voiceActive = false;
+      updateMicBtn();
+    }
+  };
+
+  recognition.onend = () => {
+    voiceActive = false;
+    updateMicBtn();
+  };
+
+  return recognition;
+}
+
+function voiceIsCorrect(transcript, answer) {
+  // partial match — correct answer appears anywhere in transcript
+  const normT = normalize(transcript);
+  const normA = normalize(answer);
+  if (normT.includes(normA)) return true;
+  if (normA.includes(normT) && normT.length > 2) return true;
+  // also check slash-separated alternatives
+  return answer.split("/").map(p => normalize(p.trim())).some(p => normT.includes(p));
+}
+
+function handleVoiceResult(correct, heard, isSkip=false) {
+  if (!voiceSessionRunning) return;
+  voiceActive = false;
+  clearTimeout(voiceSilenceTimer);
+  if (voiceRecognition) { try { voiceRecognition.stop(); } catch(e) {} }
+
+  const ws = getWS(currentWord.deckId, currentWord.idx);
+  const isNew = ws.correct === 0 && ws.wrong === 0;
+  if (correct) {
+    ws.correct++; ws.streak++;
+    sessionCorrect++; sessionConsecutive++;
+    S.totalCorrect++;
+    addExp(isNew ? 20 : 5);
+    if (ws.streak === 5) addExp(50);
+    checkAllBadges();
+  } else {
+    ws.wrong++; ws.streak = 0; sessionConsecutive = 0;
+  }
+  saveState();
+  speak(currentWord.de);
+  showVoiceFeedback(correct, heard, isSkip);
+
+  const delay = correct ? VOICE_PARAMS.correctShowTime : VOICE_PARAMS.wrongShowTime;
+  setTimeout(() => {
+    if (!voiceSessionRunning) return;
+    answered = false;
+    currentWord = pickNext(false);
+    renderVoiceDrill();
+    setTimeout(() => startListening(), 400);
+  }, delay);
+}
+
+function startListening() {
+  if (!voiceSessionRunning) return;
+  voiceRecognition = initVoiceRecognition();
+  if (!voiceRecognition) return;
+  voiceActive = true;
+  updateMicBtn();
+  setVoiceStatus("Listening… say the German word");
+  try { voiceRecognition.start(); } catch(e) { voiceActive = false; updateMicBtn(); }
+  // silence timeout
+  clearTimeout(voiceSilenceTimer);
+  voiceSilenceTimer = setTimeout(() => {
+    if (voiceActive) {
+      try { voiceRecognition.stop(); } catch(e) {}
+      handleVoiceResult(false, "", true);
+    }
+  }, VOICE_PARAMS.silenceTimeout);
+}
+
+function stopListening() {
+  voiceActive = false;
+  clearTimeout(voiceSilenceTimer);
+  if (voiceRecognition) { try { voiceRecognition.stop(); } catch(e) {} }
+  updateMicBtn();
+  setVoiceStatus("Paused — tap mic to resume");
+}
+
+function stopVoiceSession() {
+  voiceSessionRunning = false;
+  voiceActive = false;
+  clearTimeout(voiceSilenceTimer);
+  if (voiceRecognition) { try { voiceRecognition.stop(); } catch(e) {} }
+}
+
+function toggleMic() {
+  if (voiceActive) stopListening();
+  else startListening();
+}
+
+function updateMicBtn() {
+  const btn = document.getElementById("voice-mic-btn");
+  if (!btn) return;
+  if (voiceActive) {
+    btn.className = "mic-btn listening";
+    btn.textContent = "🎙️";
+  } else {
+    btn.className = "mic-btn";
+    btn.textContent = "🎤";
+  }
+}
+
+function setVoiceStatus(msg) {
+  const el = document.getElementById("voice-status");
+  if (el) el.textContent = msg;
+}
+
+function showVoiceFeedback(correct, heard, isSkip) {
+  const el = document.getElementById("voice-feedback-area");
+  if (!el) return;
+  const cls = correct ? "correct" : "wrong";
+  const icon = correct ? "✓" : "✗";
+  const heardHtml = heard && !isSkip
+    ? `<div class="voice-feedback-heard">you said: "${heard}"</div>` : "";
+  const skipHtml = isSkip ? `<div class="voice-feedback-heard">skipped</div>` : "";
+  el.innerHTML = `<div class="voice-feedback ${cls}">
+    <div class="voice-feedback-answer">${icon} ${currentWord.de}</div>
+    ${heardHtml}${skipHtml}
+    ${currentWord.pl ? `<div style="font-size:12px;color:#888;margin-top:2px;">plural: ${currentWord.pl}</div>` : ""}
+  </div>
+  ${currentWord.examples && currentWord.examples.length ? `
+    <div class="examples-wrap">
+      <div class="examples-title">Example</div>
+      <div class="example-row">
+        <div class="example-de">${currentWord.examples[0].de}</div>
+        <div class="example-en">${currentWord.examples[0].en}</div>
+      </div>
+    </div>` : ""}`;
+}
+
+function renderVoiceDrill() {
+  const el = document.getElementById("main-screen");
+  if (!currentWord) return;
+  const ws = getWS(currentWord.deckId, currentWord.idx);
+  const badges = [
+    ws.streak >= 5 ? `<span class="mastered-badge">✓ mastered</span>` : "",
+    ws.streak > 0 && ws.streak < 5 ? `<span class="streak-badge">🔥 ${ws.streak}</span>` : ""
+  ].join(" ");
+  const deckNames = [...selectedIds].map(id => getDeck(id)?.name).filter(Boolean).join(" + ");
+  el.innerHTML = `
+    <div class="screen">
+      <div class="screen-top">
+        <div class="screen-label">${deckNames}</div>
+        <button class="back-btn" onclick="stopVoiceSession();backToMenu()">← Menu</button>
+      </div>
+      <div class="word-display">
+        <div class="english-word">${currentWord.en}</div>
+        <div class="word-hint">${currentWord.hint} ${badges}</div>
+      </div>
+      <div class="voice-indicator">
+        <button class="mic-btn" id="voice-mic-btn" onclick="toggleMic()">🎤</button>
+        <div class="voice-status" id="voice-status">Tap the mic to start</div>
+      </div>
+      <div id="voice-feedback-area"></div>
+      <div class="stats-row">${miniStats(ws)}</div>
+    </div>`;
 }
 
 // ── LEARN MODE ────────────────────────────────
