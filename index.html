@@ -1006,11 +1006,13 @@ function initVoiceRecognition() {
   return recognition;
 }
 
-function speakEnglish(text) {
-  if (!window.speechSynthesis) return;
+function speakEnglish(text, onDone) {
+  if (!window.speechSynthesis) { if (onDone) onDone(); return; }
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "en-US"; u.rate = 0.9;
+  u.onend = () => { if (onDone) onDone(); };
+  u.onerror = () => { if (onDone) onDone(); };
   speechSynthesis.speak(u);
 }
 
@@ -1053,8 +1055,9 @@ function handleVoiceResult(correct, heard, isSkip=false) {
     currentWord = pickNext(false);
     renderVoiceDrill();
     if (eyesFreeMode) {
-      speakEnglish(currentWord.en);
-      setTimeout(() => startListening(), 1200);
+      speakEnglish(currentWord.en, () => {
+        setTimeout(() => startListening(), 400);
+      });
     } else {
       setTimeout(() => startListening(), 400);
     }
@@ -1166,8 +1169,8 @@ function renderVoiceDrill() {
         </div>
       </div>
       <div class="word-display">
-        <div class="english-word" ${eyesFreeMode?'style="filter:blur(6px);user-select:none;"':''}>${currentWord.en}</div>
-        <div class="word-hint" ${eyesFreeMode?'style="opacity:0;"':''}>${currentWord.hint} ${badges}</div>
+        <div class="english-word">${currentWord.en}</div>
+        <div class="word-hint">${currentWord.hint} ${badges}</div>
       </div>
       <div class="voice-indicator">
         <button class="mic-btn" id="voice-mic-btn" onclick="toggleMic()">🎤</button>
