@@ -228,6 +228,7 @@ const ALL_GROUPS = [DECKS_A1, DECKS_A2];
 // ── CONSTANTS ────────────────────────────────
 const STORAGE_KEY = "gv5";
 const UNLOCK_STEP = 5; // words unlocked per tap
+const UNLOCK_INITIAL = 12; // words unlocked on first open
 
 // EXP levels: level N requires BASE * RATIO^(N-1) cumulative XP
 const EXP_BASE = 100, EXP_RATIO = 1.4;
@@ -425,7 +426,7 @@ function renderExpBar() {
 function getUnlocked(deckId) {
   const deck = getDeck(deckId);
   if (!deck) return 0;
-  if (S.unlocked[deckId] === undefined) S.unlocked[deckId] = Math.min(UNLOCK_STEP, deck.words.length);
+  if (S.unlocked[deckId] === undefined) S.unlocked[deckId] = Math.min(UNLOCK_INITIAL, deck.words.length);
   return S.unlocked[deckId];
 }
 function unlockMore(deckId) {
@@ -552,7 +553,7 @@ function resetDeck(deckId) {
     const key=deckId+"_"+i;
     delete S.words[key];
   });
-  S.unlocked[deckId]=Math.min(UNLOCK_STEP, deck.words.length);
+  S.unlocked[deckId]=Math.min(UNLOCK_INITIAL, deck.words.length);
   saveState();
   renderStatsScreen();
   renderGroups();
