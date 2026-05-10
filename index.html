@@ -1027,9 +1027,10 @@ function handleVoiceTimerResult(correct, heard, isSkip=false){
     const wordEl=document.getElementById("timer-word-display");
     if(wordEl)wordEl.style.opacity="0.3";
     const typed=heard&&!isSkip?heard:"";
+    const skippedAnswer=currentWord.de;
     if(fb)fb.innerHTML=typed
-      ?`<span style="color:#993C1D;font-weight:700;font-size:16px;text-decoration:line-through;">${typed}</span> → <span style="color:#993C1D;font-weight:700;font-size:22px;">${currentWord.de}</span>`
-      :`<span style="color:#993C1D;font-weight:700;font-size:22px;">✗ ${timerQueue[timerWordsDone]?.de||currentWord.de}</span>`;
+      ?`<span style="color:#993C1D;font-weight:700;font-size:16px;text-decoration:line-through;">${typed}</span> → <span style="color:#993C1D;font-weight:700;font-size:22px;">${skippedAnswer}</span>`
+      :`<span style="color:#993C1D;font-weight:700;font-size:22px;">✗ ${skippedAnswer}</span>`;
     document.getElementById("t-wrong").textContent=timerWrong;
     setTimeout(()=>{
       if(timerFinished)return;
