@@ -848,10 +848,12 @@ function checkDrill(){
     addExp(isNew?20:5);
     if(ws.streak===5)addExp(50);
     input.classList.add("correct");
+    playSuccess();
     checkAllBadges();
   } else {
     ws.wrong++;ws.streak=0;sessionConsecutive=0;
     input.classList.add("wrong");
+    playFailure();
   }
   saveState();
   showDrillFeedback(correct,ws);
@@ -1016,6 +1018,44 @@ function speakEnglish(text, onDone) {
   speechSynthesis.speak(u);
 }
 
+function playSuccess() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    // two-note rising chime: E5 → G5
+    osc.frequency.setValueAtTime(659, t);
+    osc.frequency.setValueAtTime(784, t + 0.12);
+    gain.gain.setValueAtTime(0.25, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+    osc.start(t);
+    osc.stop(t + 0.5);
+  } catch(e) {}
+}
+
+function playFailure() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    // single low dip: D4 → C4
+    osc.frequency.setValueAtTime(294, t);
+    osc.frequency.linearRampToValueAtTime(261, t + 0.25);
+    gain.gain.setValueAtTime(0.2, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+    osc.start(t);
+    osc.stop(t + 0.4);
+  } catch(e) {}
+}
+
 function voiceIsCorrect(transcript, answer) {
   // partial match — correct answer appears anywhere in transcript
   const normT = normalize(transcript);
@@ -1045,6 +1085,7 @@ function handleVoiceResult(correct, heard, isSkip=false) {
     ws.wrong++; ws.streak = 0; sessionConsecutive = 0;
   }
   saveState();
+  if (correct) playSuccess(); else playFailure();
   speak(currentWord.de);
   showVoiceFeedback(correct, heard, isSkip);
 
@@ -1349,6 +1390,7 @@ function checkTimer(){
   saveState();
   if(correct){
     timerCorrect++;
+    playSuccess();
     addExp(10);
     timerExpEarned+=10;
     const wsT=getWS(currentWord.deckId,currentWord.idx);
@@ -1366,6 +1408,7 @@ function checkTimer(){
     const wsTw=getWS(currentWord.deckId,currentWord.idx);
     wsTw.wrong++;
     saveState();
+    playFailure();
     timerPaused=true;
     clearInterval(timerInterval);
     // insert word back at random position ahead
