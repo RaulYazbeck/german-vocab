@@ -558,6 +558,20 @@ function resetDeck(deckId) {
   renderStatsScreen();
   renderGroups();
 }
+function resetAll() {
+  if(!confirm("Reset ALL progress across every deck? This cannot be undone."))return;
+  S.words={};
+  S.exp=0;
+  S.badges=[];
+  S.unlocked={};
+  S.loginDates=[];
+  S.totalCorrect=0;
+  S.lastLoginDate="";
+  saveState();
+  renderExpBar();
+  renderGroups();
+  renderStatsScreen();
+}
 
 // ── LOGIN STREAK ──────────────────────────────
 function recordLogin(){
@@ -1119,7 +1133,10 @@ function endTimer(won){
 // ── STATS SCREEN ──────────────────────────────
 function renderStatsScreen(){
   let html=`<div class="screen">
-    <div class="screen-top"><div class="screen-label">Progress</div><button class="back-btn" onclick="backToMenu()">← Back</button></div>`;
+    <div class="screen-top"><div class="screen-label">Progress</div><button class="back-btn" onclick="backToMenu()">← Back</button></div>
+    <div style="text-align:right;margin-bottom:1rem;">
+      <button onclick="resetAll()" style="font-size:12px;padding:5px 12px;border:1px solid #E24B4A;border-radius:6px;background:white;color:#E24B4A;cursor:pointer;">Reset all progress</button>
+    </div>`;
   ALL_GROUPS.forEach(group=>{
     html+=`<div class="stats-section"><div class="stats-section-title">${group.icon} ${group.name}</div>`;
     group.decks.forEach(deck=>{
