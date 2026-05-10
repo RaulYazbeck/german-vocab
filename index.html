@@ -290,6 +290,7 @@ let voiceRecognition = null;
 let voiceActive = false;
 let voiceSilenceTimer = null;
 let voiceSessionRunning = false;
+let eyesFreeMode = false;
 
 function loadState() {
   try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r); } catch(e) {}
@@ -921,6 +922,13 @@ function startVoiceSession() {
   document.getElementById("exp-bar").style.display = "none";
 }
 
+function toggleEyesFree() {
+  eyesFreeMode = !eyesFreeMode;
+  renderVoiceDrill();
+  // if mic was active, restart listening
+  if (voiceSessionRunning) setTimeout(() => startListening(), 300);
+}
+
 function initVoiceRecognition() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) return null;
@@ -998,6 +1006,14 @@ function initVoiceRecognition() {
   return recognition;
 }
 
+function speakEnglish(text) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US"; u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+
 function voiceIsCorrect(transcript, answer) {
   // partial match — correct answer appears anywhere in transcript
   const normT = normalize(transcript);
@@ -1012,7 +1028,7 @@ function handleVoiceResult(correct, heard, isSkip=false) {
   if (!voiceSessionRunning) return;
   voiceActive = false;
   clearTimeout(voiceSilenceTimer);
-  if (voiceRecognition) { try { voiceRecognition.stop(); } catch(e) {} }
+  if (voiceRecognition) { try { voiceRecognition.abort(); } catch(e) {} voiceRecognition = null; }
 
   const ws = getWS(currentWord.deckId, currentWord.idx);
   const isNew = ws.correct === 0 && ws.wrong === 0;
@@ -1036,7 +1052,12 @@ function handleVoiceResult(correct, heard, isSkip=false) {
     answered = false;
     currentWord = pickNext(false);
     renderVoiceDrill();
-    setTimeout(() => startListening(), 400);
+    if (eyesFreeMode) {
+      speakEnglish(currentWord.en);
+      setTimeout(() => startListening(), 1200);
+    } else {
+      setTimeout(() => startListening(), 400);
+    }
   }, delay);
 }
 
@@ -1061,7 +1082,10 @@ function startListening() {
 function stopListening() {
   voiceActive = false;
   clearTimeout(voiceSilenceTimer);
-  if (voiceRecognition) { try { voiceRecognition.stop(); } catch(e) {} }
+  if (voiceRecognition) {
+    try { voiceRecognition.abort(); } catch(e) {}
+    voiceRecognition = null;
+  }
   updateMicBtn();
   setVoiceStatus("Paused — tap mic to resume");
 }
@@ -1070,7 +1094,10 @@ function stopVoiceSession() {
   voiceSessionRunning = false;
   voiceActive = false;
   clearTimeout(voiceSilenceTimer);
-  if (voiceRecognition) { try { voiceRecognition.stop(); } catch(e) {} }
+  if (voiceRecognition) {
+    try { voiceRecognition.abort(); } catch(e) {}
+    voiceRecognition = null;
+  }
 }
 
 function toggleMic() {
@@ -1131,11 +1158,16 @@ function renderVoiceDrill() {
     <div class="screen">
       <div class="screen-top">
         <div class="screen-label">${deckNames}</div>
-        <button class="back-btn" onclick="stopVoiceSession();backToMenu()">← Menu</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button onclick="toggleEyesFree()" style="font-size:11px;padding:4px 10px;border:1px solid ${eyesFreeMode?'#1D9E75':'#ddd'};border-radius:6px;background:${eyesFreeMode?'#f0faf6':'white'};color:${eyesFreeMode?'#0F6E56':'#888'};cursor:pointer;">
+            ${eyesFreeMode?'👁 Eyes-free ON':'👁 Eyes-free OFF'}
+          </button>
+          <button class="back-btn" onclick="stopVoiceSession();backToMenu()">← Menu</button>
+        </div>
       </div>
       <div class="word-display">
-        <div class="english-word">${currentWord.en}</div>
-        <div class="word-hint">${currentWord.hint} ${badges}</div>
+        <div class="english-word" ${eyesFreeMode?'style="filter:blur(6px);user-select:none;"':''}>${currentWord.en}</div>
+        <div class="word-hint" ${eyesFreeMode?'style="opacity:0;"':''}>${currentWord.hint} ${badges}</div>
       </div>
       <div class="voice-indicator">
         <button class="mic-btn" id="voice-mic-btn" onclick="toggleMic()">🎤</button>
